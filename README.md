@@ -120,7 +120,6 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 </details>
 
 
-&nbsp;
 ## Installing
 
 Add the following to your `pubspec.yaml` file:
@@ -182,7 +181,6 @@ For example
 
 You can get latitude, longitude and address like that.
 
-&nbsp;
 
 # Custom Map Style
 
@@ -206,7 +204,6 @@ FlutterLocationPicker(
 ```
 Example:
 
-&nbsp;
 
 <img src="https://user-images.githubusercontent.com/25803558/186025531-8e57f941-56d2-4413-8931-1841b437e740.png" width="300" height="600" />
 
