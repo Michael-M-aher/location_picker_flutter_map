@@ -5,3 +5,7 @@
 ## 1.0.1
 
 * fixed formatting issue of loading_widget
+
+## 1.0.2
+
+* fixed infinite loading screen when user location is turned off

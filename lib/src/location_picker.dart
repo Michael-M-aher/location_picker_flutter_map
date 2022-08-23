@@ -189,17 +189,6 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      await Geolocator.openLocationSettings();
-
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return await Geolocator.getCurrentPosition();
-    }
-
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -219,6 +208,16 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           'Location permissions are permanently denied, we cannot request permissions.');
     }
 
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      while (!await Geolocator.isLocationServiceEnabled()) {}
+    }
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
