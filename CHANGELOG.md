@@ -9,3 +9,7 @@
 ## 1.0.2
 
 * fixed infinite loading screen when user location is turned off
+
+## 1.0.3
+
+* improve performance
