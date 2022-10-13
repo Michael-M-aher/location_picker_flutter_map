@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
-import 'classes.dart';
-import 'Widgets/loading_widget.dart';
+import 'package:latlong2/latlong.dart';
+
 import 'Widgets/wide_button.dart';
+import 'classes.dart';
 
 /// Principal widget to show Flutter map using osm api with pick up location marker and search bar.
 /// you can track you current location, search for a location and select it.
@@ -47,9 +48,9 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final double maxZoomLevel;
 
-  /// [mapIsLoading] : (Widget) show custom  widget until the map finish initialization
+  /// [loadingWidget] : (Widget) show custom  widget until the map finish initialization
   ///
-  final Widget? mapIsLoading;
+  final Widget? loadingWidget;
 
   /// [trackMyPosition] : (bool) if is true, map will track your your location on the map initialization and makes inittial position of the pointer your current location (default = false)
   ///
@@ -65,57 +66,72 @@ class FlutterLocationPicker extends StatefulWidget {
 
   final bool showLocationController;
 
+  /// [showSelectLocationButton] : (bool) enable/disable select location button (default = true)
+  ///
+
+  final bool showSelectLocationButton;
+
   /// [mapAnimationDuration] : (Duration) time duration of the move from point to point animation (default = Duration(milliseconds: 2000))
   ///
 
   final Duration mapAnimationDuration;
 
-  /// [mapLoadingBackground] : (Color) change the background color of the loading screen before the map initialized (default = Colors.red)
+  /// [mapLoadingBackground] : (Color) change the background color of the loading screen before the map initialized
   ///
 
-  final Color mapLoadingBackground;
+  final Color? mapLoadingBackground;
 
-  /// [selectLocationButtonColor] : (Color) change the color of the select Location button (default = Colors.red)
+  /// [selectLocationButtonStyle] : (ButtonStyle) change the style of the select Location button
   ///
-  final Color selectLocationButtonColor;
+  final ButtonStyle? selectLocationButtonStyle;
 
-  /// [selectLocationTextColor] : (Color) change the color of the select Location text (default = Colors.white)
+  /// [selectLocationTextColor] : (Color) change the color of the select Location text
   ///
-  final Color selectLocationTextColor;
+  final Color? selectLocationTextColor;
 
-  /// [searchBarBackgroundColor] : (Color) change the background color of the search bar (default = Colors.white)
-  ///
-
-  final Color searchBarBackgroundColor;
-
-  /// [searchBarTextColor] : (Color) change the color of the search bar text (default = Colors.black)
+  /// [showSearchBar] : (bool) enable/disable search bar (default = true)
   ///
 
-  final Color searchBarTextColor;
+  final bool showSearchBar;
 
-  /// [searchBarHintColor] : (Color) change the color of the search bar hint text (default = Colors.grey)
+  /// [searchBarBackgroundColor] : (Color) change the background color of the search bar
   ///
 
-  final Color searchBarHintColor;
+  final Color? searchBarBackgroundColor;
 
-  /// [zoomButtonsColor] : (Color) change the color of the zoom buttons icons (default = Colors.white)
+  /// [searchBarTextColor] : (Color) change the color of the search bar text
   ///
 
-  final Color zoomButtonsColor;
+  final Color? searchBarTextColor;
 
-  /// [zoomButtonsBackgroundColor] : (Color) change the background color of the zoom buttons (default = Colors.blue)
+  /// [searchBarHintText] : (String) change the hint text of the search bar
   ///
 
-  final Color zoomButtonsBackgroundColor;
+  final String searchBarHintText;
 
-  /// [locationButtonsColor] : (Color) change the color of the location button icon (default = Colors.white)
+  /// [searchBarHintColor] : (Color) change the color of the search bar hint text
   ///
 
-  final Color locationButtonsColor;
+  final Color? searchBarHintColor;
 
-  /// [locationButtonsBackgroundColor] : (Color) change the background color of the location button (default = Colors.blue)
+  /// [zoomButtonsColor] : (Color) change the color of the zoom buttons icons
   ///
-  final Color locationButtonsBackgroundColor;
+
+  final Color? zoomButtonsColor;
+
+  /// [zoomButtonsBackgroundColor] : (Color) change the background color of the zoom buttons
+  ///
+
+  final Color? zoomButtonsBackgroundColor;
+
+  /// [locationButtonsColor] : (Color) change the color of the location button icon
+  ///
+
+  final Color? locationButtonsColor;
+
+  /// [locationButtonBackgroundColor] : (Color) change the background color of the location button
+  ///
+  final Color? locationButtonBackgroundColor;
 
   /// [markerIconColor] : (Color) change the marker color of the map (default = Colors.red)
   ///
@@ -124,6 +140,7 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [markerIcon] : (IconData) change the marker icon of the map (default = Icons.location_on)
   ///
   final IconData markerIcon;
+
   const FlutterLocationPicker({
     Key? key,
     required this.onPicked,
@@ -138,20 +155,23 @@ class FlutterLocationPicker extends StatefulWidget {
     this.trackMyPosition = false,
     this.showZoomController = true,
     this.showLocationController = true,
-    this.selectLocationButtonColor = Colors.blue,
-    this.selectLocationTextColor = Colors.white,
-    this.searchBarBackgroundColor = Colors.white,
-    this.searchBarTextColor = Colors.black,
-    this.searchBarHintColor = Colors.grey,
-    this.locationButtonsBackgroundColor = Colors.blue,
-    this.zoomButtonsBackgroundColor = Colors.blue,
-    this.zoomButtonsColor = Colors.white,
-    this.mapLoadingBackground = Colors.white,
-    this.locationButtonsColor = Colors.white,
+    this.showSelectLocationButton = true,
+    this.selectLocationButtonStyle,
+    this.selectLocationTextColor,
+    this.showSearchBar = true,
+    this.searchBarBackgroundColor,
+    this.searchBarTextColor,
+    this.searchBarHintText = 'Search location',
+    this.searchBarHintColor,
+    this.locationButtonBackgroundColor,
+    this.zoomButtonsBackgroundColor,
+    this.zoomButtonsColor,
+    this.mapLoadingBackground,
+    this.locationButtonsColor,
     this.markerIconColor = Colors.red,
     this.markerIcon = Icons.location_pin,
-    Widget? mapIsLoading,
-  })  : mapIsLoading = mapIsLoading ?? const LoadingScreen(),
+    Widget? loadingWidget,
+  })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
 
   @override
@@ -299,7 +319,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     var decodedResponse =
         jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
     String displayName = decodedResponse['display_name'];
-    return PickedData(center, displayName);
+    return PickedData(center, displayName, decodedResponse['address']);
   }
 
   @override
@@ -410,7 +430,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       child: Container(
         margin: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: widget.searchBarBackgroundColor,
+          color: widget.searchBarBackgroundColor ??
+              Theme.of(context).backgroundColor,
           borderRadius: BorderRadius.circular(5),
         ),
         child: Column(
@@ -423,7 +444,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 controller: _searchController,
                 focusNode: _focusNode,
                 decoration: InputDecoration(
-                  hintText: 'Search Location',
+                  hintText: widget.searchBarHintText,
                   border: inputBorder,
                   focusedBorder: inputFocusBorder,
                   hintStyle: TextStyle(color: widget.searchBarHintColor),
@@ -473,76 +494,61 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   Widget _buildControllerButtons() {
     return Stack(
       children: [
-        (widget.showZoomController)
-            ? Positioned(
-                bottom: 195,
-                right: 5,
-                child: FloatingActionButton(
-                  heroTag: "btn1",
-                  backgroundColor: widget.zoomButtonsBackgroundColor,
-                  onPressed: () {
-                    _animatedMapMove(_mapController.center,
-                        _mapController.zoom + widget.stepZoom);
-                  },
-                  child: Icon(
-                    Icons.zoom_in,
-                    color: widget.zoomButtonsColor,
-                  ),
-                ),
-              )
-            : const Positioned(
-                bottom: 120,
-                right: 5,
-                child: SizedBox(),
+        if (widget.showZoomController)
+          Positioned(
+            bottom: 195,
+            right: 5,
+            child: FloatingActionButton(
+              heroTag: "btn1",
+              backgroundColor: widget.zoomButtonsBackgroundColor,
+              onPressed: () {
+                _animatedMapMove(_mapController.center,
+                    _mapController.zoom + widget.stepZoom);
+              },
+              child: Icon(
+                Icons.zoom_in,
+                color: widget.zoomButtonsColor,
               ),
-        (widget.showZoomController)
-            ? Positioned(
-                bottom: 130,
-                right: 5,
-                child: FloatingActionButton(
-                  heroTag: "btn2",
-                  backgroundColor: widget.zoomButtonsBackgroundColor,
-                  onPressed: () {
-                    _animatedMapMove(_mapController.center,
-                        _mapController.zoom - widget.stepZoom);
-                  },
-                  child: Icon(
-                    Icons.zoom_out,
-                    color: widget.zoomButtonsColor,
-                  ),
-                ),
-              )
-            : const Positioned(
-                bottom: 120,
-                right: 5,
-                child: SizedBox(),
+            ),
+          ),
+        if (widget.showZoomController)
+          Positioned(
+            bottom: 130,
+            right: 5,
+            child: FloatingActionButton(
+              heroTag: "btn2",
+              backgroundColor: widget.zoomButtonsBackgroundColor,
+              onPressed: () {
+                _animatedMapMove(_mapController.center,
+                    _mapController.zoom - widget.stepZoom);
+              },
+              child: Icon(
+                Icons.zoom_out,
+                color: widget.zoomButtonsColor,
               ),
-        (widget.showLocationController)
-            ? Positioned(
-                bottom: 65,
-                right: 5,
-                child: FloatingActionButton(
-                  heroTag: "btn3",
-                  backgroundColor: widget.locationButtonsBackgroundColor,
-                  onPressed: () async {
-                    _determinePosition().then((currentPostion) {
-                      _animatedMapMove(
-                          LatLng(currentPostion.latitude,
-                              currentPostion.longitude),
-                          18);
-                      setNameCurrentPos(
-                          currentPostion.latitude, currentPostion.longitude);
-                    });
-                  },
-                  child: Icon(Icons.my_location,
-                      color: widget.locationButtonsColor),
-                ),
-              )
-            : const Positioned(
-                bottom: 120,
-                right: 5,
-                child: SizedBox(),
-              ),
+            ),
+          ),
+        if (widget.showLocationController)
+          Positioned(
+            bottom: 65,
+            right: 5,
+            child: FloatingActionButton(
+              heroTag: "btn3",
+              backgroundColor: widget.locationButtonBackgroundColor,
+              onPressed: () async {
+                _determinePosition().then((currentPosition) {
+                  _animatedMapMove(
+                      LatLng(
+                          currentPosition.latitude, currentPosition.longitude),
+                      18);
+                  setNameCurrentPos(
+                      currentPosition.latitude, currentPosition.longitude);
+                });
+              },
+              child:
+                  Icon(Icons.my_location, color: widget.locationButtonsColor),
+            ),
+          ),
       ],
     );
   }
@@ -566,16 +572,17 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             ),
           ],
         )),
-        Positioned.fill(
-            child: IgnorePointer(
-          child: Center(
-            child: Icon(
-              widget.markerIcon,
-              color: widget.markerIconColor,
-              size: 50,
+        if (!isLoading)
+          Positioned.fill(
+              child: IgnorePointer(
+            child: Center(
+              child: Icon(
+                widget.markerIcon,
+                color: widget.markerIconColor,
+                size: 50,
+              ),
             ),
-          ),
-        )),
+          )),
       ],
     );
   }
@@ -583,37 +590,46 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   @override
   Widget build(BuildContext context) {
     // String? _autocompleteSelection;
-    return (isLoading)
-        ? Scaffold(
-            body: widget.mapIsLoading!,
-            backgroundColor: widget.mapLoadingBackground,
-          )
-        : SafeArea(
-            child: Stack(
-              children: [
-                _buildMap(),
-                _buildControllerButtons(),
-                _buildSearchBar(),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: WideButton(widget.selectLocationButtonText,
-                          onPressed: () async {
-                        pickData().then((value) {
-                          widget.onPicked(value);
-                        });
-                      },
-                          backgroundcolor: widget.selectLocationButtonColor,
-                          textcolor: widget.selectLocationTextColor),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          );
+    return SafeArea(
+      child: Container(
+        color: widget.mapLoadingBackground,
+        child: Stack(
+          children: [
+            _buildMap(),
+            if (isLoading)
+              Center(
+                child: widget.loadingWidget!,
+              ),
+            _buildControllerButtons(),
+            if (widget.showSearchBar) _buildSearchBar(),
+            if (widget.showSelectLocationButton)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: WideButton(widget.selectLocationButtonText,
+                      onPressed: () async {
+                    setState(() {
+                      isLoading = true;
+                    });
+                    pickData().then((value) {
+                      widget.onPicked(value);
+                      setState(() {
+                        isLoading = false;
+                      });
+                    });
+                  },
+                      style: widget.selectLocationButtonStyle,
+                      textColor: widget.selectLocationTextColor),
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

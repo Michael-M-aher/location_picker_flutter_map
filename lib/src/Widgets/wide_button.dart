@@ -7,15 +7,15 @@ class WideButton extends StatelessWidget {
       this.padding = 0.0,
       this.height = 45,
       required this.onPressed,
-      required this.backgroundcolor,
-      required this.textcolor})
+      this.style,
+      this.textColor})
       : super(key: key);
 
   final String text;
   final double padding;
   final double height;
-  final Color backgroundcolor;
-  final Color textcolor;
+  final ButtonStyle? style;
+  final Color? textColor;
   final void Function() onPressed;
 
   @override
@@ -28,13 +28,11 @@ class WideButton extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
         child: ElevatedButton(
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(backgroundcolor),
-          ),
+          style: style,
           onPressed: onPressed,
           child: Text(
             text,
-            style: TextStyle(color: textcolor),
+            style: TextStyle(color: textColor),
           ),
         ),
       ),
