@@ -4,8 +4,8 @@ class OSMdata {
   final double longitude;
   OSMdata(
       {required this.displayname,
-      required this.latitude,
-      required this.longitude});
+        required this.latitude,
+        required this.longitude});
   @override
   String toString() {
     return '$displayname, $latitude, $longitude';
@@ -32,6 +32,7 @@ class LatLong {
 class PickedData {
   final LatLong latLong;
   final String address;
+  final Map<String, dynamic> addressData;
 
-  PickedData(this.latLong, this.address);
+  PickedData(this.latLong, this.address, this.addressData);
 }
