@@ -1,6 +1,6 @@
 # location_picker_flutter_map
 
-A Flutter package that provides Place search and Location picker for flutter maps with alot of cusomizations using Open Street Map.
+A Flutter package that provides Place search and Location picker for flutter maps with a lot of customizations using Open Street Map.
 
 ## Features
 
@@ -66,7 +66,7 @@ On Android you'll need to add either the `ACCESS_COARSE_LOCATION` or the `ACCESS
 <details>
 <summary>iOS</summary>
 
-On iOS you'll need to add the following entries to your Info.plist file (located under ios/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningfull in the context of your App):
+On iOS you'll need to add the following entries to your Info.plist file (located under ios/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningful in the context of your App):
 
 ``` xml
 <key>NSLocationWhenInUseUsageDescription</key>
@@ -93,14 +93,14 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 <details>
 <summary>macOS</summary>
 
-On macOS you'll need to add the following entries to your Info.plist file (located under macOS/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningfull in the context of your App):
+On macOS you'll need to add the following entries to your Info.plist file (located under macOS/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningful in the context of your App):
 
 ``` xml
 <key>NSLocationUsageDescription</key>
 <string>This app needs access to location.</string>
 ```
 
-You will also have to add the following entry to the DebugProfile.entitlements and Release.entitlements files. This will declare that your App wants to make use of the device's location services and adds it to the list in the "System Preferences" -> "Security & Privace" -> "Privacy" settings.
+You will also have to add the following entry to the DebugProfile.entitlements and Release.entitlements files. This will declare that your App wants to make use of the device's location services and adds it to the list in the "System Preferences" -> "Security & Privacy" -> "Privacy" settings.
 ```xml
 <key>com.apple.security.personal-information.location</key>
 <true/>
@@ -149,14 +149,15 @@ To use is simple, just call the widget bellow. You need to pass the onPicked met
 
 # Then Usage
 
-Now if you press Set Current Loatiion button, you will get the pinned location by onPicked method.
+Now if you press Set Current Location button, you will get the pinned location by onPicked method.
 
 In the onPicked method you will receive pickedData.
 
-pickedData has two properties.
+pickedData has three properties.
 
 1. latLong
-2. address
+2. address     `//String address`
+3. addressMap  `//Map<String, dynamic> of address object`
 
 latLong has two more properties.
 
@@ -193,7 +194,7 @@ Get the Maptile Url like this
   https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?{apikey}
 ```
 
-use it in the urlTemplate paramter.
+use it in the urlTemplate parameter.
 
 
 ```dart
