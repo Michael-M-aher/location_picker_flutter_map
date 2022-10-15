@@ -291,6 +291,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   ///   longitude (double): The longitude of the location.
   void setNameCurrentPos(double latitude, double longitude) async {
     var client = http.Client();
+    setState(() {
+      isLoading = true;
+    });
     String url =
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&zoom=18&addressdetails=1';
 
@@ -300,7 +303,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
     _searchController.text =
         decodedResponse['display_name'] ?? "Search Location";
-    setState(() {});
+    setState(() {
+      isLoading = false;
+    });
   }
 
   /// It takes the poiner of the map and sends a request to the OpenStreetMap API to get the address of
