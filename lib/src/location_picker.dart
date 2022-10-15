@@ -344,6 +344,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             (_) {
               setNameCurrentPos(
                   currentPosition.latitude, currentPosition.longitude);
+              _animatedMapMove(
+                  LatLng(currentPosition.latitude, currentPosition.longitude),
+                  18.0);
             },
           );
         },
