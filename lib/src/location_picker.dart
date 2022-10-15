@@ -492,14 +492,15 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   }
 
   Widget _buildControllerButtons() {
-    return Stack(
-      children: [
-        if (widget.showZoomController)
-          Positioned(
-            bottom: 195,
-            right: 5,
-            child: FloatingActionButton(
+    return PositionedDirectional(
+      bottom: 72,
+      end: 16,
+      child: Column(
+        children: [
+          if (widget.showZoomController)
+            FloatingActionButton(
               heroTag: "btn1",
+              shape: const CircleBorder(),
               backgroundColor: widget.zoomButtonsBackgroundColor,
               onPressed: () {
                 _animatedMapMove(_mapController.center,
@@ -510,13 +511,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 color: widget.zoomButtonsColor,
               ),
             ),
-          ),
-        if (widget.showZoomController)
-          Positioned(
-            bottom: 130,
-            right: 5,
-            child: FloatingActionButton(
+          const SizedBox(height: 16),
+          if (widget.showZoomController)
+            FloatingActionButton(
               heroTag: "btn2",
+              shape: const CircleBorder(),
               backgroundColor: widget.zoomButtonsBackgroundColor,
               onPressed: () {
                 _animatedMapMove(_mapController.center,
@@ -527,19 +526,16 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 color: widget.zoomButtonsColor,
               ),
             ),
-          ),
-        if (widget.showLocationController)
-          Positioned(
-            bottom: 65,
-            right: 5,
-            child: FloatingActionButton(
+          const SizedBox(height: 24),
+          if (widget.showLocationController)
+            FloatingActionButton(
               heroTag: "btn3",
               backgroundColor: widget.locationButtonBackgroundColor,
               onPressed: () async {
                 _determinePosition().then((currentPosition) {
                   _animatedMapMove(
-                      LatLng(
-                          currentPosition.latitude, currentPosition.longitude),
+                      LatLng(currentPosition.latitude,
+                          currentPosition.longitude),
                       18);
                   setNameCurrentPos(
                       currentPosition.latitude, currentPosition.longitude);
@@ -548,85 +544,82 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               child:
                   Icon(Icons.my_location, color: widget.locationButtonsColor),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildMap() {
-    return Stack(
-      children: [
-        Positioned.fill(
-            child: FlutterMap(
-          options: MapOptions(
-              center: initPosition,
-              zoom:
-                  initPosition != null ? widget.initZoom : widget.minZoomLevel,
-              maxZoom: widget.maxZoomLevel,
-              minZoom: widget.minZoomLevel),
-          mapController: _mapController,
-          layers: [
-            TileLayerOptions(
-              urlTemplate: widget.urlTemplate,
-              subdomains: ['a', 'b', 'c'],
-            ),
-          ],
-        )),
-        if (!isLoading)
-          Positioned.fill(
-              child: IgnorePointer(
-            child: Center(
-              child: Icon(
-                widget.markerIcon,
-                color: widget.markerIconColor,
-                size: 50,
-              ),
-            ),
-          )),
+    return Positioned.fill(
+        child: FlutterMap(
+      options: MapOptions(
+          center: initPosition,
+          zoom: initPosition != null ? widget.initZoom : widget.minZoomLevel,
+          maxZoom: widget.maxZoomLevel,
+          minZoom: widget.minZoomLevel),
+      mapController: _mapController,
+      layers: [
+        TileLayerOptions(
+          urlTemplate: widget.urlTemplate,
+          subdomains: ['a', 'b', 'c'],
+        ),
       ],
+    ));
+  }
+
+  Widget _buildMarker() {
+    return Positioned.fill(
+        child: IgnorePointer(
+      child: Center(
+        child: Icon(
+          widget.markerIcon,
+          color: widget.markerIconColor,
+          size: 50,
+        ),
+      ),
+    ));
+  }
+
+  Widget _buildSelectButton() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: WideButton(widget.selectLocationButtonText,
+              onPressed: () async {
+            setState(() {
+              isLoading = true;
+            });
+            pickData().then((value) {
+              widget.onPicked(value);
+              setState(() {
+                isLoading = false;
+              });
+            });
+          },
+              style: widget.selectLocationButtonStyle,
+              textColor: widget.selectLocationTextColor),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // String? _autocompleteSelection;
     return SafeArea(
       child: Container(
         color: widget.mapLoadingBackground,
         child: Stack(
           children: [
             _buildMap(),
-            if (isLoading)
-              Center(
-                child: widget.loadingWidget!,
-              ),
+            if (!isLoading) _buildMarker(),
+            if (isLoading) Center(child: widget.loadingWidget!),
             _buildControllerButtons(),
             if (widget.showSearchBar) _buildSearchBar(),
-            if (widget.showSelectLocationButton)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: WideButton(widget.selectLocationButtonText,
-                      onPressed: () async {
-                    setState(() {
-                      isLoading = true;
-                    });
-                    pickData().then((value) {
-                      widget.onPicked(value);
-                      setState(() {
-                        isLoading = false;
-                      });
-                    });
-                  },
-                      style: widget.selectLocationButtonStyle,
-                      textColor: widget.selectLocationTextColor),
-                ),
-              ),
-            )
+            if (widget.showSelectLocationButton) _buildSelectButton()
           ],
         ),
       ),
