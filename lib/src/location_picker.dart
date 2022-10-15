@@ -564,8 +564,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       layers: [
         TileLayerOptions(
           urlTemplate: widget.urlTemplate,
-          subdomains: ['a', 'b', 'c'],
-        ),
+          subdomains: const ['a', 'b', 'c'],
+        )
       ],
     ));
   }

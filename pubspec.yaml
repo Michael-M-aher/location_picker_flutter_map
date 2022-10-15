@@ -17,6 +17,6 @@ dependencies:
   latlong2: ^0.8.1
 
 dev_dependencies:
-  flutter_lints: ^2.0.0
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
