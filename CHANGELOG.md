@@ -1,7 +1,7 @@
 ## 1.1.0
 
 * Improve performance
-* Fix trackMyPosition not working
+* Fix `trackMyPosition` not working
 * Make controls position directional
 * Make zoom controls shape circular
 * Use default app styles and theming instead of explicit values
