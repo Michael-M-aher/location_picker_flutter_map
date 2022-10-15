@@ -20,6 +20,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final void Function(PickedData pickedData) onPicked;
 
+  /// [onError] : (callback) is trigger when an error occurs while fetching location
+  ///
+  final void Function(Exception e)? onError;
+
   /// [initPosition] :(LatLong?) set the initial location of the pointer on the map
   ///
   final LatLong? initPosition;
@@ -144,6 +148,7 @@ class FlutterLocationPicker extends StatefulWidget {
   const FlutterLocationPicker({
     Key? key,
     required this.onPicked,
+    this.onError,
     this.initPosition,
     this.stepZoom = 1,
     this.initZoom = 17,
@@ -188,6 +193,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   LatLng? initPosition;
   Timer? _debounce;
   bool isLoading = true;
+  late void Function(Exception e) onError;
 
   /// It returns true if the text is RTL, false if it's LTR
   ///
@@ -211,6 +217,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
+      onError(const PermissionDeniedException("Location Permission is denied"));
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         // Permissions are denied, next time you could try
@@ -223,6 +230,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     }
 
     if (permission == LocationPermission.deniedForever) {
+      onError(const PermissionDeniedException(
+          "Location Permission is denied forever"));
       // Permissions are denied forever, handle appropriately.
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
@@ -297,15 +306,22 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     String url =
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&zoom=18&addressdetails=1';
 
-    var response = await client.post(Uri.parse(url));
-    var decodedResponse =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
-
-    _searchController.text =
-        decodedResponse['display_name'] ?? "Search Location";
-    setState(() {
-      isLoading = false;
-    });
+    try {
+      var response = await client.post(Uri.parse(url));
+      var decodedResponse =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
+      _searchController.text =
+          decodedResponse['display_name'] ?? "Search Location";
+      setState(() {
+        isLoading = false;
+      });
+    } on Exception catch (e) {
+      onError(e);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   /// It takes the poiner of the map and sends a request to the OpenStreetMap API to get the address of
@@ -330,6 +346,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   @override
   void initState() {
     _mapController = MapController();
+    onError = widget.onError ?? (e) => debugPrint(e.toString());
 
     /// Checking if the trackMyPosition is true or false. If it is true, it will get the current
     /// position of the user and set the initLate and initLong to the current position. If it is false,
@@ -485,6 +502,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                               longitude: double.parse(e['lon'])))
                           .toList();
                       setState(() {});
+                    } on Exception catch (e) {
+                      onError(e);
                     } finally {
                       client.close();
                     }
@@ -542,8 +561,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               onPressed: () async {
                 _determinePosition().then((currentPosition) {
                   _animatedMapMove(
-                      LatLng(currentPosition.latitude,
-                          currentPosition.longitude),
+                      LatLng(
+                          currentPosition.latitude, currentPosition.longitude),
                       18);
                   setNameCurrentPos(
                       currentPosition.latitude, currentPosition.longitude);
@@ -603,10 +622,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             });
             pickData().then((value) {
               widget.onPicked(value);
-              setState(() {
-                isLoading = false;
-              });
-            });
+            }, onError: (e) => onError(e)).whenComplete(() => setState(() {
+                  isLoading = false;
+                }));
           },
               style: widget.selectLocationButtonStyle,
               textColor: widget.selectLocationTextColor),
