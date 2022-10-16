@@ -126,7 +126,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^1.1.1
+      location_picker_flutter_map: ^1.1.2
 
 ## Simple Usage
 
@@ -168,13 +168,15 @@ latLong has two more properties.
 Address has two more properties.
 
 1. houseNumber
-2. neighbourhood
-3. city
-4. state
-5. postcode
-6. country
-7. countryCode
-8. iSO31662Lvl4
+2. road
+3. suburb
+4. neighbourhood
+5. city
+6. state
+7. postcode
+8. country
+9. countryCode
+10. iSO31662Lvl4
 
 For example
 

@@ -39,6 +39,8 @@ class PickedData {
 
 class Address {
   String? houseNumber;
+  String? road;
+  String? suburb;
   String? neighbourhood;
   String? city;
   String? state;
@@ -55,7 +57,9 @@ class Address {
       this.iSO31662Lvl4,
       this.postcode,
       this.country,
-      this.countryCode});
+      this.countryCode,
+      this.road,
+      this.suburb});
 
   Address.fromJson(Map<String, dynamic> json) {
     houseNumber = json['house_number'];
@@ -66,5 +70,7 @@ class Address {
     postcode = json['postcode'];
     country = json['country'];
     countryCode = json['country_code'];
+    road = json['road'];
+    suburb = json['suburb'];
   }
 }

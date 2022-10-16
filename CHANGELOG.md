@@ -1,3 +1,8 @@
+## 1.1.2
+
+* Add `road` property to `Address` class
+* Add `suburb` property to `Address` class
+
 ## 1.1.1
 
 * Fix issues with new flutter_map update
