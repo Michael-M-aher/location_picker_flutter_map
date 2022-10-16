@@ -52,7 +52,7 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final double minZoomLevel;
 
-  /// [maxZoomLevel] : (double) set default zoom value (default = 18)
+  /// [maxZoomLevel] : (double) set default zoom value (default = 18.4)
   ///
   final double maxZoomLevel;
 
@@ -83,6 +83,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
 
   final Duration mapAnimationDuration;
+
+  /// [mapLoadingBackgroundColor] : (Color) change the background color of the loading screen before the map initialized
+  ///
+  final Color? mapLoadingBackgroundColor;
 
   /// [selectLocationButtonStyle] : (ButtonStyle) change the style of the select Location button
   ///
@@ -152,7 +156,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.stepZoom = 1,
     this.initZoom = 17,
     this.minZoomLevel = 2,
-    this.maxZoomLevel = 18,
+    this.maxZoomLevel = 18.4,
     this.urlTemplate = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     this.mapLanguage = 'en',
     this.selectLocationButtonText = 'Set Current Location',
@@ -168,6 +172,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.searchBarTextColor,
     this.searchBarHintText = 'Search location',
     this.searchBarHintColor,
+    this.mapLoadingBackgroundColor,
     this.locationButtonBackgroundColor,
     this.zoomButtonsBackgroundColor,
     this.zoomButtonsColor,
@@ -358,15 +363,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         initPosition =
             LatLng(currentPosition.latitude, currentPosition.longitude);
 
-        _mapController.onReady.then(
-          (_) {
-            setNameCurrentPos(
-                currentPosition.latitude, currentPosition.longitude);
-            _animatedMapMove(
-                LatLng(currentPosition.latitude, currentPosition.longitude),
-                18.0);
-          },
-        );
+        setNameCurrentPos(currentPosition.latitude, currentPosition.longitude);
+        _animatedMapMove(
+            LatLng(currentPosition.latitude, currentPosition.longitude), 18.0);
       }, onError: (e) => onError(e)).whenComplete(() => setState(() {
             isLoading = false;
           }));
@@ -376,12 +375,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       setState(() {
         isLoading = false;
       });
-      _mapController.onReady.then(
-        (_) {
-          setNameCurrentPos(
-              widget.initPosition!.latitude, widget.initPosition!.longitude);
-        },
-      );
+      setNameCurrentPos(
+          widget.initPosition!.latitude, widget.initPosition!.longitude);
     } else {
       setState(() {
         isLoading = false;
@@ -584,10 +579,12 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           maxZoom: widget.maxZoomLevel,
           minZoom: widget.minZoomLevel),
       mapController: _mapController,
-      layers: [
-        TileLayerOptions(
+      children: [
+        TileLayer(
           urlTemplate: widget.urlTemplate,
           subdomains: const ['a', 'b', 'c'],
+          backgroundColor:
+              widget.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
         )
       ],
     ));

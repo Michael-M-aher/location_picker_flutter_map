@@ -1,3 +1,8 @@
+## 1.1.1
+
+* Fix issues with new flutter_map update
+* Add `mapLoadingBackgroundColor` property
+
 ## 1.1.0
 
 * Improve performance
