@@ -6,7 +6,8 @@ A Flutter package that provides Place search and Location picker for flutter map
 
 * Pick location from map
 * Search location by places
-* use custom map style
+* Show/Hide controllers, buttons and searchBar
+* Use custom map style
 * Easy to use
 
 ## Getting Started
@@ -125,7 +126,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^1.0.3
+      location_picker_flutter_map: ^1.1.0
 
 ## Simple Usage
 
@@ -157,30 +158,45 @@ pickedData has three properties.
 
 1. latLong
 2. address     `//String address`
-3. addressMap  `//Map<String, dynamic> of address object`
+3. addressData  `//Address contain address details`
 
 latLong has two more properties.
 
 1. latitude
 2. longitude
 
+Address has two more properties.
+
+1. houseNumber
+2. neighbourhood
+3. city
+4. state
+5. postcode
+6. country
+7. countryCode
+8. iSO31662Lvl4
+
 For example
 
     FlutterLocationPicker(
             initPosition: LatLong(23, 89),
-            buttonColor: Colors.blue,
-            buttonText: 'Set Current Location',
+            selectLocationButtonStyle: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.blue),
+            ),
+            selectLocationButtonText: 'Set Current Location',
             initZoom: 11,
             minZoomLevel: 5,
             maxZoomLevel: 16,
             trackMyPosition: true,
+            onError: (e) => print(e),
             onPicked: (pickedData) {
               print(pickedData.latLong.latitude);
               print(pickedData.latLong.longitude);
               print(pickedData.address);
+              print(pickedData.addressData.country);
             })
 
-You can get latitude, longitude and address like that.
+You can get latitude, longitude, address and addressData like that.
 
 
 # Custom Map Style

@@ -1,13 +1,13 @@
 ## 1.1.0
 
 * Improve performance
-* Fix `trackMyPosition` not working
+* Support multiple languages using `mapLanguage`
 * Make controls position directional
-* Make zoom controls shape circular
 * Use default app styles and theming instead of explicit values
 * Make all controls optional by adding `showSelectLocationButton` and `showSearchBar`
+* Add a new class for Address with all address details
 * Add `searchBarHintText` property
-* Add `addressMap` to `pickedData` response
+* Add `addressData` to `pickedData` response
 * Add `onError` property and improve error handling
 * **BREAKING CHANGES**
     * Replaced `mapIsLoading` with `loadingWidget`

@@ -32,6 +32,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final String urlTemplate;
 
+  /// [mapLanguage] : (String) set the language of the map and address text (default = 'en')
+  ///
+  final String mapLanguage;
+
   /// [selectLocationButtonText] : (String) set the text of the select location button (default = 'Set Current Location')
   ///
   final String selectLocationButtonText;
@@ -79,11 +83,6 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
 
   final Duration mapAnimationDuration;
-
-  /// [mapLoadingBackground] : (Color) change the background color of the loading screen before the map initialized
-  ///
-
-  final Color? mapLoadingBackground;
 
   /// [selectLocationButtonStyle] : (ButtonStyle) change the style of the select Location button
   ///
@@ -155,6 +154,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.minZoomLevel = 2,
     this.maxZoomLevel = 18,
     this.urlTemplate = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    this.mapLanguage = 'en',
     this.selectLocationButtonText = 'Set Current Location',
     this.mapAnimationDuration = const Duration(milliseconds: 2000),
     this.trackMyPosition = false,
@@ -171,7 +171,6 @@ class FlutterLocationPicker extends StatefulWidget {
     this.locationButtonBackgroundColor,
     this.zoomButtonsBackgroundColor,
     this.zoomButtonsColor,
-    this.mapLoadingBackground,
     this.locationButtonsColor,
     this.markerIconColor = Colors.red,
     this.markerIcon = Icons.location_pin,
@@ -305,7 +304,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       isLoading = true;
     });
     String url =
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&zoom=18&addressdetails=1';
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
 
     try {
       var response = await client.post(Uri.parse(url));
@@ -335,13 +334,14 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         _mapController.center.latitude, _mapController.center.longitude);
     var client = http.Client();
     String url =
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${_mapController.center.latitude}&lon=${_mapController.center.longitude}&zoom=18&addressdetails=1';
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${_mapController.center.latitude}&lon=${_mapController.center.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
 
     var response = await client.post(Uri.parse(url));
     var decodedResponse =
         jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
     String displayName = decodedResponse['display_name'];
-    return PickedData(center, displayName, decodedResponse['address']);
+    return PickedData(
+        center, displayName, Address.fromJson(decodedResponse['address']));
   }
 
   @override
@@ -463,6 +463,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 focusNode: _focusNode,
                 decoration: InputDecoration(
                   hintText: widget.searchBarHintText,
+                  hintTextDirection: isRTL(widget.searchBarHintText)
+                      ? TextDirection.rtl
+                      : TextDirection.ltr,
                   border: inputBorder,
                   focusedBorder: inputFocusBorder,
                   hintStyle: TextStyle(color: widget.searchBarHintColor),
@@ -483,7 +486,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                     var client = http.Client();
                     try {
                       String url =
-                          'https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1';
+                          'https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}';
                       var response = await client.post(Uri.parse(url));
                       var decodedResponse =
                           jsonDecode(utf8.decode(response.bodyBytes))
@@ -546,12 +549,15 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 color: widget.zoomButtonsColor,
               ),
             ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 22),
           if (widget.showLocationController)
             FloatingActionButton(
               heroTag: "btn3",
               backgroundColor: widget.locationButtonBackgroundColor,
               onPressed: () async {
+                setState(() {
+                  isLoading = true;
+                });
                 _determinePosition().then((currentPosition) {
                   _animatedMapMove(
                       LatLng(
@@ -629,18 +635,15 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Container(
-        color: widget.mapLoadingBackground,
-        child: Stack(
-          children: [
-            _buildMap(),
-            if (!isLoading) _buildMarker(),
-            if (isLoading) Center(child: widget.loadingWidget!),
-            _buildControllerButtons(),
-            if (widget.showSearchBar) _buildSearchBar(),
-            if (widget.showSelectLocationButton) _buildSelectButton()
-          ],
-        ),
+      child: Stack(
+        children: [
+          _buildMap(),
+          if (!isLoading) _buildMarker(),
+          if (isLoading) Center(child: widget.loadingWidget!),
+          _buildControllerButtons(),
+          if (widget.showSearchBar) _buildSearchBar(),
+          if (widget.showSelectLocationButton) _buildSelectButton()
+        ],
       ),
     );
   }

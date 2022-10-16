@@ -17,10 +17,14 @@ class MyApp extends StatelessWidget {
             minZoomLevel: 5,
             maxZoomLevel: 16,
             trackMyPosition: true,
+            searchBarBackgroundColor: Colors.white,
+            mapLanguage: 'ar',
+            onError: (e) => print(e),
             onPicked: (pickedData) {
               print(pickedData.latLong.latitude);
               print(pickedData.latLong.longitude);
               print(pickedData.address);
+              print(pickedData.addressData.country);
             }),
       ),
     );
