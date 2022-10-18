@@ -285,6 +285,16 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           zoomTween.evaluate(animation));
     });
 
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _animationController = AnimationController(
+            vsync: this, duration: widget.mapAnimationDuration);
+      } else if (status == AnimationStatus.dismissed) {
+        _animationController = AnimationController(
+            vsync: this, duration: widget.mapAnimationDuration);
+      }
+    });
+
     if (mounted) {
       _animationController.forward();
     }

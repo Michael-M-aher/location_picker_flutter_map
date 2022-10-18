@@ -1,3 +1,7 @@
+## 1.1.4
+
+* Fix error zoom buttons and locate me button not working
+
 ## 1.1.3
 
 * Fix Ticker error
