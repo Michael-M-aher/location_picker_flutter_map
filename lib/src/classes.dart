@@ -32,45 +32,7 @@ class LatLong {
 class PickedData {
   final LatLong latLong;
   final String address;
-  final Address addressData;
+  final Map<String, dynamic> addressData;
 
   PickedData(this.latLong, this.address, this.addressData);
-}
-
-class Address {
-  String? houseNumber;
-  String? road;
-  String? suburb;
-  String? neighbourhood;
-  String? city;
-  String? state;
-  String? iSO31662Lvl4;
-  String? postcode;
-  String? country;
-  String? countryCode;
-
-  Address(
-      {this.houseNumber,
-      this.neighbourhood,
-      this.city,
-      this.state,
-      this.iSO31662Lvl4,
-      this.postcode,
-      this.country,
-      this.countryCode,
-      this.road,
-      this.suburb});
-
-  Address.fromJson(Map<String, dynamic> json) {
-    houseNumber = json['house_number'];
-    neighbourhood = json['neighbourhood'];
-    city = json['city'];
-    state = json['state'];
-    iSO31662Lvl4 = json['ISO3166-2-lvl4'];
-    postcode = json['postcode'];
-    country = json['country'];
-    countryCode = json['country_code'];
-    road = json['road'];
-    suburb = json['suburb'];
-  }
 }

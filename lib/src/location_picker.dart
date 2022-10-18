@@ -191,6 +191,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     with TickerProviderStateMixin {
   /// Creating a new instance of the MapController class.
   MapController _mapController = MapController();
+  // Create a animation controller that has a duration and a TickerProvider.
+  late AnimationController _animationController;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   List<OSMdata> _options = <OSMdata>[];
@@ -272,29 +274,20 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         begin: _mapController.center.longitude, end: destLocation.longitude);
     final zoomTween = Tween<double>(begin: _mapController.zoom, end: destZoom);
 
-    // Create a animation controller that has a duration and a TickerProvider.
-    final controller =
-        AnimationController(duration: widget.mapAnimationDuration, vsync: this);
     // The animation determines what path the animation will take. You can try different Curves values, although I found
     // fastOutSlowIn to be my favorite.
-    final Animation<double> animation =
-        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+    final Animation<double> animation = CurvedAnimation(
+        parent: _animationController, curve: Curves.fastOutSlowIn);
 
-    controller.addListener(() {
+    _animationController.addListener(() {
       _mapController.move(
           LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
           zoomTween.evaluate(animation));
     });
 
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-      } else if (status == AnimationStatus.dismissed) {
-        controller.dispose();
-      }
-    });
-
-    controller.forward();
+    if (mounted) {
+      _animationController.forward();
+    }
   }
 
   /// It takes the latitude and longitude of the current location and uses the OpenStreetMap API to get
@@ -345,13 +338,21 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     var decodedResponse =
         jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
     String displayName = decodedResponse['display_name'];
-    return PickedData(
-        center, displayName, Address.fromJson(decodedResponse['address']));
+    return PickedData(center, displayName, decodedResponse['address']);
+  }
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   @override
   void initState() {
     _mapController = MapController();
+    _animationController =
+        AnimationController(duration: widget.mapAnimationDuration, vsync: this);
     onError = widget.onError ?? (e) => debugPrint(e.toString());
 
     /// Checking if the trackMyPosition is true or false. If it is true, it will get the current
@@ -399,6 +400,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   @override
   void dispose() {
     _mapController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 

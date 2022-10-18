@@ -126,7 +126,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^1.1.2
+      location_picker_flutter_map: ^1.1.3
 
 ## Simple Usage
 
@@ -158,25 +158,13 @@ pickedData has three properties.
 
 1. latLong
 2. address     `//String address`
-3. addressData  `//Address contain address details`
+3. addressData  `//Map<String, dynamic> contains address details`
 
 latLong has two more properties.
 
 1. latitude
 2. longitude
 
-Address has two more properties.
-
-1. houseNumber
-2. road
-3. suburb
-4. neighbourhood
-5. city
-6. state
-7. postcode
-8. country
-9. countryCode
-10. iSO31662Lvl4
 
 For example
 
@@ -195,7 +183,7 @@ For example
               print(pickedData.latLong.latitude);
               print(pickedData.latLong.longitude);
               print(pickedData.address);
-              print(pickedData.addressData.country);
+              print(pickedData.addressData['country']);
             })
 
 You can get latitude, longitude, address and addressData like that.

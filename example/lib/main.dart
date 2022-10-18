@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
               print(pickedData.latLong.latitude);
               print(pickedData.latLong.longitude);
               print(pickedData.address);
-              print(pickedData.addressData.country);
+              print(pickedData.addressData['country']);
             }),
       ),
     );

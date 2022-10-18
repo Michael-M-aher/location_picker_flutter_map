@@ -1,3 +1,9 @@
+## 1.1.3
+
+* Fix Ticker error
+* Remove Address class
+* Add Map `addressData` to `pickedData` response
+
 ## 1.1.2
 
 * Add `road` property to `Address` class
