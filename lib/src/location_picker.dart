@@ -273,7 +273,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     final lngTween = Tween<double>(
         begin: _mapController.center.longitude, end: destLocation.longitude);
     final zoomTween = Tween<double>(begin: _mapController.zoom, end: destZoom);
-
+    // Create a animation controller that has a duration and a TickerProvider.
+    if (mounted) {
+      _animationController = AnimationController(
+          vsync: this, duration: widget.mapAnimationDuration);
+    }
     // The animation determines what path the animation will take. You can try different Curves values, although I found
     // fastOutSlowIn to be my favorite.
     final Animation<double> animation = CurvedAnimation(
@@ -283,16 +287,6 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       _mapController.move(
           LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
           zoomTween.evaluate(animation));
-    });
-
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _animationController = AnimationController(
-            vsync: this, duration: widget.mapAnimationDuration);
-      } else if (status == AnimationStatus.dismissed) {
-        _animationController = AnimationController(
-            vsync: this, duration: widget.mapAnimationDuration);
-      }
     });
 
     if (mounted) {

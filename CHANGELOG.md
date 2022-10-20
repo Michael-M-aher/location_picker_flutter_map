@@ -1,3 +1,7 @@
+## 1.1.5
+
+* Improve Animations
+
 ## 1.1.4
 
 * Fix error zoom buttons and locate me button not working
