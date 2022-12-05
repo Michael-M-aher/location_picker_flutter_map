@@ -144,7 +144,7 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final Widget? markerIcon;
 
-  /// [markerIconOffset] : (double) change the marker icon offset in y direction
+  /// [markerIconOffset] : (double) change the marker icon offset in y direction (default = 50.0)
   ///
   final double markerIconOffset;
 
@@ -178,7 +178,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.zoomButtonsColor,
     this.locationButtonsColor,
     this.markerIcon,
-    this.markerIconOffset = 0,
+    this.markerIconOffset = 50.0,
     Widget? loadingWidget,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
