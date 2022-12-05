@@ -140,13 +140,13 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final Color? locationButtonBackgroundColor;
 
-  /// [markerIconColor] : (Color) change the marker color of the map (default = Colors.red)
+  /// [markerIcon] : (IconData) change the marker icon of the map (default = Icon(icons.location_on, color: Colors.red, size: 50))
   ///
-  final Color markerIconColor;
+  final Widget? markerIcon;
 
-  /// [markerIcon] : (IconData) change the marker icon of the map (default = Icons.location_on)
+  /// [markerIconOffset] : (double) change the marker icon offset in y direction
   ///
-  final IconData markerIcon;
+  final double markerIconOffset;
 
   const FlutterLocationPicker({
     Key? key,
@@ -177,8 +177,8 @@ class FlutterLocationPicker extends StatefulWidget {
     this.zoomButtonsBackgroundColor,
     this.zoomButtonsColor,
     this.locationButtonsColor,
-    this.markerIconColor = Colors.red,
-    this.markerIcon = Icons.location_pin,
+    this.markerIcon,
+    this.markerIconOffset = 0,
     Widget? loadingWidget,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
@@ -191,6 +191,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     with TickerProviderStateMixin {
   /// Creating a new instance of the MapController class.
   MapController _mapController = MapController();
+
   // Create a animation controller that has a duration and a TickerProvider.
   late AnimationController _animationController;
   final TextEditingController _searchController = TextEditingController();
@@ -598,15 +599,18 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   Widget _buildMarker() {
     return Positioned.fill(
-        child: IgnorePointer(
-      child: Center(
-        child: Icon(
-          widget.markerIcon,
-          color: widget.markerIconColor,
-          size: 50,
+      bottom: widget.markerIconOffset,
+      child: IgnorePointer(
+        child: Center(
+          child: widget.markerIcon ??
+              const Icon(
+                Icons.location_pin,
+                color: Colors.red,
+                size: 50,
+              ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildSelectButton() {
