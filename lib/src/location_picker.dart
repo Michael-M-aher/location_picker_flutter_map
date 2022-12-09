@@ -415,6 +415,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         itemCount: _options.length > 5 ? 5 : _options.length,
         itemBuilder: (context, index) {
           return ListTile(
+            leading: Icon(Icons.location_on),            
             title: Text(
               _options[index].displayname,
               style: TextStyle(color: widget.searchBarTextColor),
