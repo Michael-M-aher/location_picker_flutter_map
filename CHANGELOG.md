@@ -1,3 +1,8 @@
+## 1.2.0
+
+* Add Current Location Pointer
+* Update dependencies
+
 ## 1.1.5
 
 * Improve Animations

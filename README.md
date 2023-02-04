@@ -2,9 +2,12 @@
 
 A Flutter package that provides Place search and Location picker for flutter maps with a lot of customizations using Open Street Map.
 
+[![Get the library](https://img.shields.io/badge/Get%20library-pub-blue)](https://pub.dev/packages/location_picker_flutter_map) &nbsp; [![Example](https://img.shields.io/badge/Example-Ex-success)](https://pub.dev/packages/location_picker_flutter_map/example)
+
 ## Features
 
 * Pick location from map
+* Show current location pointer on map
 * Search location by places
 * Show/Hide controllers, buttons and searchBar
 * Use custom map style
@@ -38,7 +41,7 @@ The TL;DR version is:
 android.useAndroidX=true
 android.enableJetifier=true
 ```
-2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file to 33:
+2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file:
 
 ```
 android {
@@ -47,7 +50,18 @@ android {
   ...
 }
 ```
-3. Make sure you replace all the `android.` dependencies to their AndroidX counterparts (a full list can be found here: [Migrating to AndroidX](https://developer.android.com/jetpack/androidx/migrate)).
+
+3. Make sure you set the `minSdkVersion` in your "android/app/build.gradle" file:
+
+```
+android {
+  minSdkVersion 23
+
+  ...
+}
+```
+
+4. Make sure you replace all the `android.` dependencies to their AndroidX counterparts (a full list can be found here: [Migrating to AndroidX](https://developer.android.com/jetpack/androidx/migrate)).
 
 **Permissions**
 
@@ -126,7 +140,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^1.1.5
+      location_picker_flutter_map: ^1.2.0
 
 ## Simple Usage
 

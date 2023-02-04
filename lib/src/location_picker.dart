@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
@@ -63,6 +64,10 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [trackMyPosition] : (bool) if is true, map will track your your location on the map initialization and makes inittial position of the pointer your current location (default = false)
   ///
   final bool trackMyPosition;
+
+  /// [showCurrentLocationPointer] : (bool) if is true, your current location will be shown on the map (default = true)
+  ///
+  final bool showCurrentLocationPointer;
 
   /// [showZoomController] : (bool) enable/disable zoom in and zoom out buttons (default = true)
   ///
@@ -165,6 +170,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.showZoomController = true,
     this.showLocationController = true,
     this.showSelectLocationButton = true,
+    this.showCurrentLocationPointer = true,
     this.selectLocationButtonStyle,
     this.selectLocationTextColor,
     this.showSearchBar = true,
@@ -416,7 +422,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         itemCount: _options.length > 5 ? 5 : _options.length,
         itemBuilder: (context, index) {
           return ListTile(
-            leading: Icon(Icons.location_on),            
+            leading: Icon(Icons.location_on, color: widget.searchBarTextColor),
             title: Text(
               _options[index].displayname,
               style: TextStyle(color: widget.searchBarTextColor),
@@ -452,7 +458,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         margin: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: widget.searchBarBackgroundColor ??
-              Theme.of(context).backgroundColor,
+              Theme.of(context).colorScheme.background,
           borderRadius: BorderRadius.circular(5),
         ),
         child: Column(
@@ -593,9 +599,20 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           subdomains: const ['a', 'b', 'c'],
           backgroundColor:
               widget.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
-        )
+        ),
+        if (widget.showCurrentLocationPointer) _buildCurrentLocation(),
       ],
     ));
+  }
+
+  Widget _buildCurrentLocation() {
+    return CurrentLocationLayer(
+      style: const LocationMarkerStyle(
+        markerDirection: MarkerDirection.heading,
+        headingSectorRadius: 60,
+        markerSize: Size(18, 18),
+      ),
+    );
   }
 
   Widget _buildMarker() {
