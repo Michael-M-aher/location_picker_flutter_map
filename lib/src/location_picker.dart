@@ -659,17 +659,15 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Stack(
-        children: [
-          _buildMap(),
-          if (!isLoading) _buildMarker(),
-          if (isLoading) Center(child: widget.loadingWidget!),
-          _buildControllerButtons(),
-          if (widget.showSearchBar) _buildSearchBar(),
-          if (widget.showSelectLocationButton) _buildSelectButton()
-        ],
-      ),
+    return Stack(
+      children: [
+        _buildMap(),
+        if (!isLoading) _buildMarker(),
+        if (isLoading) Center(child: widget.loadingWidget!),
+        _buildControllerButtons(),
+        if (widget.showSearchBar) _buildSearchBar(),
+        if (widget.showSelectLocationButton) _buildSelectButton()
+      ],
     );
   }
 }
