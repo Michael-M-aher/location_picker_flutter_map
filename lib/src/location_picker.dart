@@ -664,9 +664,15 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         _buildMap(),
         if (!isLoading) _buildMarker(),
         if (isLoading) Center(child: widget.loadingWidget!),
-        _buildControllerButtons(),
-        if (widget.showSearchBar) _buildSearchBar(),
-        if (widget.showSelectLocationButton) _buildSelectButton()
+        SafeArea(
+          child: Stack(
+            children: [
+              _buildControllerButtons(),
+              if (widget.showSearchBar) _buildSearchBar(),
+              if (widget.showSelectLocationButton) _buildSelectButton(),
+            ]
+          ),
+        )
       ],
     );
   }
