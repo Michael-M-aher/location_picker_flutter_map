@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
 
-import 'Widgets/wide_button.dart';
+import 'widgets/wide_button.dart';
 import 'classes.dart';
 
 /// Principal widget to show Flutter map using osm api with pick up location marker and search bar.
@@ -40,6 +40,10 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [selectLocationButtonText] : (String) set the text of the select location button (default = 'Set Current Location')
   ///
   final String selectLocationButtonText;
+
+  /// [selectLocationButtonLeadingIcon] : (Widget) set the leading icon of the select location button
+  ///
+  final Widget? selectLocationButtonLeadingIcon;
 
   /// [initZoom] : (double) set initialized zoom in specific location  (default = 17)
   ///
@@ -186,6 +190,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.markerIcon,
     this.markerIconOffset = 50.0,
     Widget? loadingWidget,
+    this.selectLocationButtonLeadingIcon,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
 
@@ -639,19 +644,22 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: WideButton(widget.selectLocationButtonText,
-              onPressed: () async {
-            setState(() {
-              isLoading = true;
-            });
-            pickData().then((value) {
-              widget.onPicked(value);
-            }, onError: (e) => onError(e)).whenComplete(() => setState(() {
-                  isLoading = false;
-                }));
-          },
-              style: widget.selectLocationButtonStyle,
-              textColor: widget.selectLocationTextColor),
+          child: WideButton(
+            widget.selectLocationButtonText,
+            leadingIcon: widget.selectLocationButtonLeadingIcon,
+            onPressed: () async {
+              setState(() {
+                isLoading = true;
+              });
+              pickData().then((value) {
+                widget.onPicked(value);
+              }, onError: (e) => onError(e)).whenComplete(() => setState(() {
+                    isLoading = false;
+                  }));
+            },
+            style: widget.selectLocationButtonStyle,
+            textColor: widget.selectLocationTextColor,
+          ),
         ),
       ),
     );
@@ -665,13 +673,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         if (!isLoading) _buildMarker(),
         if (isLoading) Center(child: widget.loadingWidget!),
         SafeArea(
-          child: Stack(
-            children: [
-              _buildControllerButtons(),
-              if (widget.showSearchBar) _buildSearchBar(),
-              if (widget.showSelectLocationButton) _buildSelectButton(),
-            ]
-          ),
+          child: Stack(children: [
+            _buildControllerButtons(),
+            if (widget.showSearchBar) _buildSearchBar(),
+            if (widget.showSelectLocationButton) _buildSelectButton(),
+          ]),
         )
       ],
     );
