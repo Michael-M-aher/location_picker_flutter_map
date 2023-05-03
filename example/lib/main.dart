@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:location_picker_flutter_map/location_picker_flutter_map.dart';
+import 'package:flutter_location_search_autocomplete/flutter_location_search_autocomplete.dart';
 
 void main() => runApp(const MyApp());
 
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Location Picker',
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: FlutterLocationPicker(
+        body: LocationSearchAutocomplete(
             initZoom: 11,
             minZoomLevel: 5,
             maxZoomLevel: 16,

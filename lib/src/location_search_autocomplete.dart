@@ -16,7 +16,7 @@ import 'classes.dart';
 /// you can track you current location, search for a location and select it.
 /// navigate easily in the map to selecte location.
 
-class FlutterLocationPicker extends StatefulWidget {
+class LocationSearchAutocomplete extends StatefulWidget {
   /// [onPicked] : (callback) is trigger when you clicked on select location,return current [PickedData] of the Marker
   ///
   final void Function(PickedData pickedData) onPicked;
@@ -153,7 +153,7 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final double markerIconOffset;
 
-  const FlutterLocationPicker({
+  const LocationSearchAutocomplete({
     Key? key,
     required this.onPicked,
     this.onError,
@@ -190,10 +190,10 @@ class FlutterLocationPicker extends StatefulWidget {
         super(key: key);
 
   @override
-  State<FlutterLocationPicker> createState() => _FlutterLocationPickerState();
+  State<LocationSearchAutocomplete> createState() => _LocationSearchAutocompleteState();
 }
 
-class _FlutterLocationPickerState extends State<FlutterLocationPicker>
+class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
     with TickerProviderStateMixin {
   /// Creating a new instance of the MapController class.
   MapController _mapController = MapController();
