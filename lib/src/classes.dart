@@ -1,14 +1,16 @@
 class OSMdata {
-  final String displayname;
+  final String displayName;
   final double latitude;
   final double longitude;
+  final Map<String, dynamic> addressData;
   OSMdata(
-      {required this.displayname,
+      {required this.displayName,
       required this.latitude,
-      required this.longitude});
+      required this.longitude,
+      required this.addressData});
   @override
   String toString() {
-    return '$displayname, $latitude, $longitude';
+    return '$displayName, $latitude, $longitude';
   }
 
   @override
@@ -16,23 +18,15 @@ class OSMdata {
     if (other.runtimeType != runtimeType) {
       return false;
     }
-    return other is OSMdata && other.displayname == displayname;
+    return other is OSMdata && other.displayName == displayName;
   }
 
   @override
-  int get hashCode => Object.hash(displayname, latitude, longitude);
+  int get hashCode => Object.hash(displayName, latitude, longitude);
 }
 
 class LatLong {
   final double latitude;
   final double longitude;
   LatLong(this.latitude, this.longitude);
-}
-
-class PickedData {
-  final LatLong latLong;
-  final String address;
-  final Map<String, dynamic> addressData;
-
-  PickedData(this.latLong, this.address, this.addressData);
 }

@@ -13,18 +13,17 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: LocationSearchAutocomplete(
-            initZoom: 11,
-            minZoomLevel: 5,
-            maxZoomLevel: 16,
-            trackMyPosition: true,
+            
             searchBarBackgroundColor: Colors.white,
-            mapLanguage: 'ar',
+            mapLanguage: 'fr',
             onError: (e) => print(e),
-            onPicked: (pickedData) {
-              print(pickedData.latLong.latitude);
-              print(pickedData.latLong.longitude);
-              print(pickedData.address);
-              print(pickedData.addressData['country']);
+            onPicked: (data) {
+              print(data.latitude);
+              print(data.longitude);
+              print(data.displayName);
+              print(data.addressData['country']);
+              print(data.addressData['city']);
+              print(data.addressData);
             }),
       ),
     );
