@@ -17,18 +17,13 @@ import 'classes.dart';
 /// navigate easily in the map to selecte location.
 
 class LocationSearchAutocomplete extends StatefulWidget {
-  /// [onPicked] : (callback) is trigger when you clicked on select location,return current [PickedData] of the Marker
+  /// [onPicked] : (callback) is triggered when you click on a location, returns current [PickedData] of the Marker
   ///
   final void Function(OSMdata data)? onPicked;
 
-  /// [onError] : (callback) is trigger when an error occurs while fetching location
+  /// [onError] : (callback) is triggered when an error occurs while fetching location
   ///
   final void Function(Exception e)? onError;
-
-// // TODO : check if this is needed
-//   /// [initPosition] :(LatLong?) set the initial location of the pointer on the map
-//   ///
-//   final LatLong? initPosition;
 
   /// [mapLanguage] : (String) set the language of the map and address text (default = 'en')
   ///
@@ -38,15 +33,10 @@ class LocationSearchAutocomplete extends StatefulWidget {
   ///
   final List<String>? countryCodes;
 
-// TODO : check if this is needed
+
   /// [loadingWidget] : (Widget) show custom  widget until the map finish initialization
   ///
   final Widget? loadingWidget;
-
-  // // TODO : check if this is needed
-  // /// [trackMyPosition] : (bool) if is true, map will track your your location on the map initialization and makes inittial position of the pointer your current location (default = false)
-  // ///
-  // final bool trackMyPosition;
 
   /// [searchBarBackgroundColor] : (Color) change the background color of the search bar
   ///
@@ -56,7 +46,7 @@ class LocationSearchAutocomplete extends StatefulWidget {
   /// [searchBarTextColor] : (Color) change the color of the search bar text
   ///
 
-  final Color? searchBarTextColor;
+  final Color searchBarTextColor;
 
   /// [searchBarHintText] : (String) change the hint text of the search bar
   ///
@@ -68,23 +58,34 @@ class LocationSearchAutocomplete extends StatefulWidget {
 
   final Color? searchBarHintColor;
 
-/// [lightAdress] : (bool) if true, displayed and returned adresses will be lighter
+  /// [lightAdress] : (bool) if true, displayed and returned adresses will be lighter
   ///
+
   final bool lightAdress;
+
+  /// [iconColor] : (Color) change the color of the search bar text
+  ///
+
+  final Color iconColor;
+
+  /// [useCurrentPositionText] : (String) change the text of the button selecting current position
+  ///
+
+  final String useCurrentPositionText;
 
   const LocationSearchAutocomplete({
     Key? key,
-    this.onPicked,
+   required this.onPicked,
     this.onError,
-    // this.initPosition,
     this.mapLanguage = 'en',
     this.countryCodes,
-    // this.trackMyPosition = false,
     this.searchBarBackgroundColor,
-    this.searchBarTextColor,
+    this.searchBarTextColor = Colors.black87,
     this.searchBarHintText = 'Search location',
+    this.useCurrentPositionText = 'Use current location',
     this.searchBarHintColor,
     this.lightAdress = false,
+    this.iconColor = Colors.grey,
     Widget? loadingWidget,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
@@ -94,17 +95,13 @@ class LocationSearchAutocomplete extends StatefulWidget {
       _LocationSearchAutocompleteState();
 }
 
-// TODO : check if 'TickerProviderStateMixin' is needed
 class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
-    with TickerProviderStateMixin {
-  // Create a animation controller that has a duration and a TickerProvider.
-  late AnimationController _animationController;
+    {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   List<OSMdata> _options = <OSMdata>[];
   LatLng? initPosition;
-  Timer? _debounce;
-  bool isLoading = true;
+  bool isLoading = false;
   late void Function(Exception e) onError;
 
   final _defaultSearchBarColor = Colors.grey[300];
@@ -121,11 +118,12 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
   }
 
   /// If location services are enabled, check if we have permissions to access the location. If we don't
-  /// have permissions, request them. If we have permissions, return the current position
+  /// have permissions, request them. If we have permissions, return the current position with data fetched
+  /// from OpenStreetMap API
   ///
   /// Returns:
-  ///   A Future<Position> object.
-  Future<Position> _determinePosition() async {
+  ///   A Future<OSMdata> object.
+  Future<OSMdata> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -164,34 +162,35 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
     }
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
-  }
+    final currentPos = await Geolocator.getCurrentPosition();
 
-  /// It takes the latitude and longitude of the current location and uses the OpenStreetMap API to get
-  /// the address of the location
-  ///
-  /// Args:
-  ///   latitude (double): The latitude of the location.
-  ///   longitude (double): The longitude of the location.
-  void setNameCurrentPos(double latitude, double longitude) async {
+    // Query OpenStreetMap API to get
+    // the address of the location
     var client = http.Client();
     setState(() {
       isLoading = true;
     });
     String url =
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
+        "https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentPos.latitude}&lon=${currentPos.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
 
     try {
       var response = await client.post(Uri.parse(url));
       var decodedResponse =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
-      _searchController.text =
-          decodedResponse['display_name'] ?? widget.searchBarHintText;
+
+      final posData = _getOSMData(decodedResponse);
+
       setState(() {
         isLoading = false;
       });
+
+      // show the current position in search bar
+      setAddressInSearchBar(posData.displayName);
+
+      return posData;
     } on Exception catch (e) {
       onError(e);
+      return Future.error(e);
     } finally {
       setState(() {
         isLoading = false;
@@ -199,24 +198,41 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
     }
   }
 
-  /// It takes the poiner of the map and sends a request to the OpenStreetMap API to get the address of
-  /// the poiner
-  ///
-  /// Returns:
-  ///   A Future object that will eventually contain a PickedData object.
-  // Future<PickedData> pickData() async {
-  //   LatLong center = LatLong(
-  //       _mapController.center.latitude, _mapController.center.longitude);
-  //   var client = http.Client();
-  //   String url =
-  //       'https://nominatim.openstreetmap.org/reverse?format=json&lat=${_mapController.center.latitude}&lon=${_mapController.center.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
+  /// Returns an OSMData object based on Map of data provided
+  /// 
+  /// args:
+  ///     data (Map): A map of data fetched from OpenStreetMap API
+  OSMdata _getOSMData(Map data) {
+    return OSMdata(
+          displayName: widget.lightAdress
+              ? data['display_name']
+              : (data['address'] as Map)
+                  .entries
+                  .where((entry) => !RegExp(
+                          r'^(neighbourhood|municipality|state|country_code|village|region|suburb|city_district|hamlet|county|ISO.*)')
+                      .hasMatch(entry.key))
+                  .fold<String>(
+                      '',
+                      (previousValue, element) => previousValue.isEmpty
+                          ? element.value
+                          : '$previousValue, ${element.value}'),
+          latitude: double.parse(data['lat']),
+          longitude: double.parse(data['lon']),
+          addressData: data['address']);
+  }
 
-  //   var response = await client.post(Uri.parse(url));
-  //   var decodedResponse =
-  //       jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
-  //   String displayName = decodedResponse['display_name'];
-  //   return PickedData(center, displayName, decodedResponse['address']);
-  // }
+  /// It takes the display name of a location and uses the OpenStreetMap API to get
+  /// the address of the location
+  ///
+  /// Args:
+  ///   displayName (String): The display name of the location.
+  void setAddressInSearchBar(String displayName) {
+    try {
+      _searchController.text = displayName;
+    } on Exception catch (e) {
+      onError(e);
+    }
+  }
 
   @override
   void setState(fn) {
@@ -227,54 +243,11 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
 
   @override
   void initState() {
-    /// Checking if the trackMyPosition is true or false. If it is true, it will get the current
-    /// position of the user and set the initLate and initLong to the current position. If it is false,
-    /// it will set the initLate and initLong to the [initPosition].latitude and
-    /// [initPosition].longitude.
-    // if (widget.trackMyPosition) {
-    //   _determinePosition().then((currentPosition) {
-    //     initPosition =
-    //         LatLng(currentPosition.latitude, currentPosition.longitude);
-
-    //     setNameCurrentPos(currentPosition.latitude, currentPosition.longitude);
-    //     _animatedMapMove(
-    //         LatLng(currentPosition.latitude, currentPosition.longitude), 18.0);
-    //   }, onError: (e) => onError(e)).whenComplete(() => setState(() {
-    //         isLoading = false;
-    //       }));
-    // } else if (widget.initPosition != null) {
-    //   initPosition =
-    //       LatLng(widget.initPosition!.latitude, widget.initPosition!.longitude);
-    //   setState(() {
-    //     isLoading = false;
-    //   });
-    //   setNameCurrentPos(
-    //       widget.initPosition!.latitude, widget.initPosition!.longitude);
-    // } else {
-    //   setState(() {
-    //     isLoading = false;
-    //   });
-    // }
-
-    /// The above code is listening to the mapEventStream and when the mapEventMoveEnd event is
-    /// triggered, it calls the setNameCurrentPos function.
-    // _mapController.mapEventStream.listen((event) async {
-    //   if (event is MapEventMoveEnd) {
-    //     setNameCurrentPos(event.center.latitude, event.center.longitude);
-    //   }
-    // });
+    onError = widget.onError ?? (e) => print(e);
 
     super.initState();
   }
 
-  /// The dispose() function is called when the widget is removed from the widget tree and is used to
-  /// clean up resources
-  @override
-  void dispose() {
-    // _mapController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
 
   Widget _buildListView() {
     return ListView.builder(
@@ -283,64 +256,49 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
         itemCount: _options.length > 5 ? 5 : _options.length,
         itemBuilder: (context, index) {
           return ListTile(
-            // leading: Icon(Icons.location_on, color: widget.searchBarTextColor),
+            // leading: Icon(Icons.location_on, color: widget.iconColor),
+            contentPadding: EdgeInsets.zero,
             title: Container(
-              padding: const EdgeInsets.symmetric(vertical: 5),
+              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10),
               margin: const EdgeInsets.symmetric(vertical: 5),
               decoration: BoxDecoration(
                   border: Border(
                       bottom: BorderSide(color: _defaultSearchBarColor!))),
               child: Text(
                 _options[index].displayName,
-                style: TextStyle(color: widget.searchBarTextColor),
+                style:
+                    TextStyle(color: widget.searchBarTextColor, fontSize: 16),
               ),
             ),
 
             onTap: () async {
-              //TODO : complete
-              setNameCurrentPos(
-                  _options[index].latitude, _options[index].longitude);
 
-              widget.onPicked!(_options[index]);
-              // setState(() {
-              //   isLoading = true;
-              // });
-              // pickData().then((value) {
-              //   widget.onPicked!(value);
-              // }, onError: (e) => onError(e)).whenComplete(() => setState(() {
-              //       isLoading = false;
-              //     }));
+              setAddressInSearchBar(_options[index].displayName);
 
               _focusNode.unfocus();
               _options.clear();
               setState(() {});
+              widget.onPicked!(_options[index]);
             },
           );
         });
   }
 
   Widget _buildSearchBar() {
-    // OutlineInputBorder inputBorder = OutlineInputBorder(
-    //   borderSide: BorderSide(color: Theme.of(context).primaryColor),
-    // );
-    // OutlineInputBorder inputFocusBorder = OutlineInputBorder(
-    //   borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 3.0),
-    // );
 
     return Container(
       margin: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: widget.searchBarBackgroundColor ??
-            Theme.of(context).colorScheme.background,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.only(left: 15),
-            margin: const EdgeInsets.only(bottom: 15),
+            // margin: const EdgeInsets.only(bottom: 15),
             decoration: BoxDecoration(
-              color: _defaultSearchBarColor,
+              color: widget.searchBarBackgroundColor ?? _defaultSearchBarColor,
               borderRadius: const BorderRadius.all(Radius.circular(15)),
             ),
             child: TextFormField(
@@ -361,7 +319,7 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
                     onPressed: () => _searchController.clear(),
                     icon: Icon(
                       Icons.clear,
-                      color: widget.searchBarTextColor,
+                      color: widget.iconColor,
                     ),
                   ),
                 ),
@@ -375,20 +333,9 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
                         jsonDecode(utf8.decode(response.bodyBytes))
                             as List<dynamic>;
                     _options = decodedResponse
-                        .map((e) => OSMdata(
-                            displayName:  widget.lightAdress ? e['display_name'] : (e['address'] as Map)
-                                .entries
-                                .where((entry) => !RegExp(
-                                        r'^(neighbourhood|municipality|state|country_code|village|region|suburb|city_district|hamlet|county|ISO.*)')
-                                    .hasMatch(entry.key))
-                                    .fold<String>('', (previousValue, element) => previousValue.isEmpty? element.value : '$previousValue, ${element.value}')
-                                    ,
-                            latitude: double.parse(e['lat']),
-                            longitude: double.parse(e['lon']),
-                            addressData: e['address']
-                                        ))
+                        .map((e) =>_getOSMData(e))
                         .toList();
-                    print(decodedResponse[0]);
+
                     setState(() {});
                   } on Exception catch (e) {
                     onError(e);
@@ -397,6 +344,7 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
                   }
                 }),
           ),
+          _buildSelectCurrentPositionButton(),
           StatefulBuilder(builder: ((context, setState) {
             return _buildListView();
           })),
@@ -405,39 +353,52 @@ class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
     );
   }
 
-  // Widget _buildSelectButton() {
-  //   return Positioned(
-  //     bottom: 0,
-  //     left: 0,
-  //     right: 0,
-  //     child: Center(
-  //       child: Padding(
-  //         padding: const EdgeInsets.all(8.0),
-  //         child: WideButton(widget.selectLocationButtonText,
-  //             onPressed: () async {
-  //           setState(() {
-  //             isLoading = true;
-  //           });
-  //           pickData().then((value) {
-  //             widget.onPicked(value);
-  //           }, onError: (e) => onError(e)).whenComplete(() => setState(() {
-  //                 isLoading = false;
-  //               }));
-  //         },
-  //             style: widget.selectLocationButtonStyle,
-  //             textColor: widget.selectLocationTextColor),
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget _buildSelectCurrentPositionButton() {
+    return Container(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            decoration: BoxDecoration(
+                border:
+                    Border(bottom: BorderSide(color: _defaultSearchBarColor!))),
+            child: TextButton(
+              onPressed: (() async {
+                
+                widget.onPicked!(await _determinePosition());
+              }),
+              child: Row(children: [
+                Container(
+                  margin: const EdgeInsets.only(right: 15),
+                  child: Icon(
+                    Icons.location_searching,
+                    color: widget.iconColor,
+                  ),
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width - 120,
+                  child: Text(
+                    widget.useCurrentPositionText,
+                    style: TextStyle(
+                        color: widget.searchBarTextColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        overflow: TextOverflow.ellipsis),
+                    maxLines: 1,
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
+              ]),
+            ),
+          );
+          
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child:
-            // isLoading
-            //     ? Center(child: widget.loadingWidget!)
-            //     :
+            isLoading
+                ? Center(child: widget.loadingWidget!)
+                :
             _buildSearchBar());
   }
 }

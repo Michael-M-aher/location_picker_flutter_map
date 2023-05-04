@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_location_search_autocomplete/flutter_location_search_autocomplete.dart';
+import 'package:flutter_location_search/flutter_location_search.dart';
 
 void main() => runApp(const MyApp());
 
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         body: LocationSearchAutocomplete(
             
-            searchBarBackgroundColor: Colors.white,
+            searchBarBackgroundColor: Colors.grey[300],
             mapLanguage: 'fr',
             onError: (e) => print(e),
             onPicked: (data) {

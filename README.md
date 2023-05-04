@@ -1,8 +1,8 @@
-# flutter_location_search_autocomplete
+# flutter_location_search
 
-A Flutter package that provides Place search and Location picker for flutter maps with a lot of customizations using Open Street Map.
+A Flutter package that provides Place search for flutter maps with a lot of customizations using Open Street Map.
 
-[![Get the library](https://img.shields.io/badge/Get%20library-pub-blue)](https://pub.dev/packages/flutter_location_search_autocomplete) &nbsp; [![Example](https://img.shields.io/badge/Example-Ex-success)](https://pub.dev/packages/flutter_location_search_autocomplete/example)
+[![Get the library](https://img.shields.io/badge/Get%20library-pub-blue)](https://pub.dev/packages/flutter_location_search) &nbsp; [![Example](https://img.shields.io/badge/Example-Ex-success)](https://pub.dev/packages/flutter_location_search/example)
 
 ## Features
 
@@ -20,7 +20,7 @@ A Flutter package that provides Place search and Location picker for flutter map
 
 ## Setup
 
-To add the flutter_location_search_autocomplete to your Flutter application read the instructions. Below are some Android and iOS specifics that are required for the package to work correctly.
+To add the flutter_location_search to your Flutter application read the instructions. Below are some Android and iOS specifics that are required for the package to work correctly.
   
 <details>
 <summary>Android</summary>
@@ -31,7 +31,7 @@ Since version 5.0.0 this plugin is implemented using the Flutter 1.12 Android pl
 
 **AndroidX** 
 
-The flutter_location_search_autocomplete plugin requires the AndroidX version of the Android Support Libraries. This means you need to make sure your Android project supports AndroidX. Detailed instructions can be found [here](https://flutter.dev/docs/development/packages-and-plugins/androidx-compatibility). 
+The flutter_location_search plugin requires the AndroidX version of the Android Support Libraries. This means you need to make sure your Android project supports AndroidX. Detailed instructions can be found [here](https://flutter.dev/docs/development/packages-and-plugins/androidx-compatibility). 
 
 The TL;DR version is:
 
@@ -65,7 +65,7 @@ android {
 
 **Permissions**
 
-On Android you'll need to add either the `ACCESS_COARSE_LOCATION` or the `ACCESS_FINE_LOCATION` permission to your Android Manifest. To do so open the AndroidManifest.xml file (located under android/app/src/main) and add one of the following two lines as direct children of the `<manifest>` tag (when you configure both permissions the `ACCESS_FINE_LOCATION` will be used by the flutter_location_search_autocomplete plugin):
+On Android you'll need to add either the `ACCESS_COARSE_LOCATION` or the `ACCESS_FINE_LOCATION` permission to your Android Manifest. To do so open the AndroidManifest.xml file (located under android/app/src/main) and add one of the following two lines as direct children of the `<manifest>` tag (when you configure both permissions the `ACCESS_FINE_LOCATION` will be used by the flutter_location_search plugin):
 
 ``` xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -140,7 +140,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      flutter_location_search_autocomplete: ^1.2.0
+      flutter_location_search: ^1.2.0
 
 ## Simple Usage
 
@@ -148,7 +148,7 @@ Add the following to your `pubspec.yaml` file:
 Import the following package in your dart file
 
 ```dart
-import 'package:flutter_location_search_autocomplete/flutter_location_search_autocomplete.dart';
+import 'package:flutter_location_search/flutter_location_search.dart';
 ```
 
 To use is simple, just call the widget bellow. You need to pass the onPicked method to get the picked position from the map.
@@ -231,7 +231,7 @@ Example:
 &nbsp;
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an [issue](https://github.com/Michael-M-aher/flutter_location_search_autocomplete/issues) first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an [issue](https://github.com/Michael-M-aher/flutter_location_search/issues) first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
@@ -252,4 +252,4 @@ Please ⭐️ this repository if this project helped you!
 ## 📝 License
 
 Copyright © 2022 [Michael Maher](https://github.com/Michael-M-aher).<br />
-This project is [MIT](https://github.com/Michael-M-aher/flutter_location_search_autocomplete/blob/main/LICENSE) licensed.
+This project is [MIT](https://github.com/Michael-M-aher/flutter_location_search/blob/main/LICENSE) licensed.
