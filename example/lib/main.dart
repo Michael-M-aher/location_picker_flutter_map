@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Location Picker',
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: LocationSearchAutocomplete(
+        body: LocationSearchWidget(
             
             searchBarBackgroundColor: Colors.grey[300],
             mapLanguage: 'fr',

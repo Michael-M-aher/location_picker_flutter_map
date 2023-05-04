@@ -16,7 +16,7 @@ import 'classes.dart';
 /// you can track you current location, search for a location and select it.
 /// navigate easily in the map to selecte location.
 
-class LocationSearchAutocomplete extends StatefulWidget {
+class LocationSearchWidget extends StatefulWidget {
   /// [onPicked] : (callback) is triggered when you click on a location, returns current [PickedData] of the Marker
   ///
   final void Function(OSMdata data)? onPicked;
@@ -73,7 +73,7 @@ class LocationSearchAutocomplete extends StatefulWidget {
 
   final String useCurrentPositionText;
 
-  const LocationSearchAutocomplete({
+  const LocationSearchWidget({
     Key? key,
    required this.onPicked,
     this.onError,
@@ -91,11 +91,11 @@ class LocationSearchAutocomplete extends StatefulWidget {
         super(key: key);
 
   @override
-  State<LocationSearchAutocomplete> createState() =>
-      _LocationSearchAutocompleteState();
+  State<LocationSearchWidget> createState() =>
+      _LocationSearchWidgetState();
 }
 
-class _LocationSearchAutocompleteState extends State<LocationSearchAutocomplete>
+class _LocationSearchWidgetState extends State<LocationSearchWidget>
     {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
