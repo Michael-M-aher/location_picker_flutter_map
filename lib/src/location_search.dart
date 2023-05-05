@@ -31,7 +31,6 @@ class LocationSearchWidget extends StatefulWidget {
   ///
   final List<String>? countryCodes;
 
-
   /// [loadingWidget] : (Widget) show custom  widget until the map finish initialization
   ///
   final Widget? loadingWidget;
@@ -73,14 +72,14 @@ class LocationSearchWidget extends StatefulWidget {
 
   const LocationSearchWidget({
     Key? key,
-   required this.onPicked,
+    required this.onPicked,
     this.onError,
     this.mapLanguage = 'en',
     this.countryCodes,
     this.searchBarBackgroundColor,
     this.searchBarTextColor = Colors.black87,
     this.searchBarHintText = 'Search location',
-    this.currentPositionButtonText= 'Use current location',
+    this.currentPositionButtonText = 'Use current location',
     this.searchBarHintColor = Colors.black87,
     this.lightAdress = false,
     this.iconColor = Colors.grey,
@@ -89,22 +88,21 @@ class LocationSearchWidget extends StatefulWidget {
         super(key: key);
 
   @override
-  State<LocationSearchWidget> createState() =>
-      _LocationSearchWidgetState();
+  State<LocationSearchWidget> createState() => _LocationSearchWidgetState();
 
   //  static State<LocationSearchWidget>? of(BuildContext context) =>
   //     context.findAncestorStateOfType<State<LocationSearchWidget>>();
 }
 
-class _LocationSearchWidgetState extends State<LocationSearchWidget>
-    {
-      final logger = Logger();
+class _LocationSearchWidgetState extends State<LocationSearchWidget> {
+  final logger = Logger();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   List<LocationData> _options = <LocationData>[];
   LatLng? initPosition;
   bool isLoading = false;
   late void Function(Exception e) onError;
+  Timer? _debounce;
 
   final _defaultSearchBarColor = Colors.grey[300];
 
@@ -172,7 +170,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
     // Query OpenStreetMap API to get
     // the address of the location
     var client = http.Client();
-    
+
     String url =
         "https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentPos.latitude}&lon=${currentPos.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
 
@@ -202,26 +200,26 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
   }
 
   /// Returns an LocationData object based on Map of data provided
-  /// 
+  ///
   /// args:
   ///     data (Map): A map of data fetched from OpenStreetMap API
   LocationData _getLocationData(Map data) {
     return LocationData(
-          displayName: !(widget.lightAdress!)
-              ? data['display_name']
-              : (data['address'] as Map)
-                  .entries
-                  .where((entry) => !RegExp(
-                          r'^(neighbourhood|municipality|state|country_code|village|region|suburb|city_district|hamlet|county|ISO.*)')
-                      .hasMatch(entry.key))
-                  .fold<String>(
-                      '',
-                      (previousValue, element) => previousValue.isEmpty
-                          ? element.value
-                          : '$previousValue, ${element.value}'),
-          latitude: double.parse(data['lat']),
-          longitude: double.parse(data['lon']),
-          addressData: data['address']);
+        displayName: !(widget.lightAdress!)
+            ? data['display_name']
+            : (data['address'] as Map)
+                .entries
+                .where((entry) => !RegExp(
+                        r'^(neighbourhood|municipality|state|country_code|village|region|suburb|city_district|hamlet|county|ISO.*)')
+                    .hasMatch(entry.key))
+                .fold<String>(
+                    '',
+                    (previousValue, element) => previousValue.isEmpty
+                        ? element.value
+                        : '$previousValue, ${element.value}'),
+        latitude: double.parse(data['lat']),
+        longitude: double.parse(data['lon']),
+        addressData: data['address']);
   }
 
   /// It takes the display name of a location and uses the OpenStreetMap API to get
@@ -251,7 +249,6 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
     super.initState();
   }
 
-
   Widget _buildListView() {
     return ListView.builder(
         shrinkWrap: true,
@@ -275,20 +272,18 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
             ),
 
             onTap: () async {
-
               setAddressInSearchBar(_options[index].displayName);
 
+              widget.onPicked!(_options[index]);
               _focusNode.unfocus();
               _options.clear();
               setState(() {});
-              widget.onPicked!(_options[index]);
             },
           );
         });
   }
 
   Widget _buildSearchBar() {
-
     return Container(
       margin: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -326,25 +321,31 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
                     ),
                   ),
                 ),
-                onChanged: (String value) async {
-                  var client = http.Client();
-                  try {
-                    String url =
-                        "https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
-                    var response = await client.post(Uri.parse(url));
-                    var decodedResponse =
-                        jsonDecode(utf8.decode(response.bodyBytes))
-                            as List<dynamic>;
-                    _options = decodedResponse
-                        .map((e) =>_getLocationData(e))
-                        .toList();
-
-                    setState(() {});
-                  } on Exception catch (e) {
-                    onError(e);
-                  } finally {
-                    client.close();
+                onChanged: (String value) {
+                  if (_debounce?.isActive ?? false) {
+                    _debounce?.cancel();
                   }
+                  setState(() {});
+                  _debounce = Timer(const Duration(milliseconds: 300), () async {
+                    var client = http.Client();
+                    try {
+                      String url =
+                          "https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
+                      var response = await client.post(Uri.parse(url));
+                      var decodedResponse =
+                          jsonDecode(utf8.decode(response.bodyBytes))
+                              as List<dynamic>;
+                      _options = decodedResponse
+                          .map((e) => _getLocationData(e))
+                          .toList();
+
+                      setState(() {});
+                    } on Exception catch (e) {
+                      onError(e);
+                    } finally {
+                      client.close();
+                    }
+                  });
                 }),
           ),
           _buildSelectCurrentPositionButton(),
@@ -358,59 +359,54 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
 
   Widget _buildSelectCurrentPositionButton() {
     return Container(
-            padding: const EdgeInsets.symmetric(vertical: 5),
-            margin: const EdgeInsets.symmetric(vertical: 5),
-            decoration: BoxDecoration(
-                border:
-                    Border(bottom: BorderSide(color: _defaultSearchBarColor!))),
-            child: TextButton(
-              onPressed: (() async {
-                
-                widget.onPicked!(await _determinePosition());
-              }),
-              child: Row(children: [
-                Container(
-                  margin: const EdgeInsets.only(right: 15),
-                  child: Icon(
-                    Icons.location_searching,
-                    color: widget.iconColor,
-                  ),
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width - 120,
-                  child: Text(
-                    widget.currentPositionButtonText!,
-                    style: TextStyle(
-                        color: widget.searchBarTextColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        overflow: TextOverflow.ellipsis),
-                    maxLines: 1,
-                  ),
-                ),
-                Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
-              ]),
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: _defaultSearchBarColor!))),
+      child: TextButton(
+        onPressed: (() async {
+          widget.onPicked!(await _determinePosition());
+        }),
+        child: Row(children: [
+          Container(
+            margin: const EdgeInsets.only(right: 15),
+            child: Icon(
+              Icons.location_searching,
+              color: widget.iconColor,
             ),
-          );
-          
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width - 120,
+            child: Text(
+              widget.currentPositionButtonText!,
+              style: TextStyle(
+                  color: widget.searchBarTextColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  overflow: TextOverflow.ellipsis),
+              maxLines: 1,
+            ),
+          ),
+          Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
+        ]),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child:
-              isLoading
-                  ? Center(child: widget.loadingWidget!)
-                  :
-              _buildSearchBar()),
+          child: isLoading
+              ? Center(child: widget.loadingWidget!)
+              : _buildSearchBar()),
     );
   }
 }
 
 class LocationSearch {
-  static Future<LocationData?>  show({
-required BuildContext context,
+  static Future<LocationData?> show({
+    required BuildContext context,
     void Function(Exception e)? onError,
     String? mapLanguage = 'en',
     List<String>? countryCodes,
@@ -418,14 +414,13 @@ required BuildContext context,
     Color? searchBarTextColor = Colors.black87,
     String? searchBarHintText = 'Search location',
     String? currentPositionButtonText = 'Use current location',
-    Color? searchBarHintColor =  Colors.black87,
+    Color? searchBarHintColor = Colors.black87,
     bool? lightAdress = false,
     Color? iconColor = Colors.grey,
     Widget? loadingWidget,
 // Mode mode = Mode.fullscreen,
-
   }) {
-builder(BuildContext ctx) => LocationSearchWidget(
+    builder(BuildContext ctx) => LocationSearchWidget(
           onPicked: ((data) => Navigator.pop(context, data)),
           onError: onError,
           mapLanguage: mapLanguage,
