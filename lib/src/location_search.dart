@@ -2,14 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
+import 'package:logger/logger.dart';
 
-import 'Widgets/wide_button.dart';
 import 'classes.dart';
 
 /// Principal widget to show Flutter map using osm api with search bar.
@@ -27,7 +25,7 @@ class LocationSearchWidget extends StatefulWidget {
 
   /// [mapLanguage] : (String) set the language of the map and address text (default = 'en')
   ///
-  final String mapLanguage;
+  final String? mapLanguage;
 
   /// [countryCodes] : Limit search results to one or more countries
   ///
@@ -46,12 +44,12 @@ class LocationSearchWidget extends StatefulWidget {
   /// [searchBarTextColor] : (Color) change the color of the search bar text
   ///
 
-  final Color searchBarTextColor;
+  final Color? searchBarTextColor;
 
   /// [searchBarHintText] : (String) change the hint text of the search bar
   ///
 
-  final String searchBarHintText;
+  final String? searchBarHintText;
 
   /// [searchBarHintColor] : (Color) change the color of the search bar hint text
   ///
@@ -61,17 +59,17 @@ class LocationSearchWidget extends StatefulWidget {
   /// [lightAdress] : (bool) if true, displayed and returned adresses will be lighter
   ///
 
-  final bool lightAdress;
+  final bool? lightAdress;
 
   /// [iconColor] : (Color) change the color of the search bar text
   ///
 
-  final Color iconColor;
+  final Color? iconColor;
 
-  /// [useCurrentPositionText] : (String) change the text of the button selecting current position
+  /// [currentPositionButtonText] : (String) change the text of the button selecting current position
   ///
 
-  final String useCurrentPositionText;
+  final String? currentPositionButtonText;
 
   const LocationSearchWidget({
     Key? key,
@@ -82,8 +80,8 @@ class LocationSearchWidget extends StatefulWidget {
     this.searchBarBackgroundColor,
     this.searchBarTextColor = Colors.black87,
     this.searchBarHintText = 'Search location',
-    this.useCurrentPositionText = 'Use current location',
-    this.searchBarHintColor,
+    this.currentPositionButtonText= 'Use current location',
+    this.searchBarHintColor = Colors.black87,
     this.lightAdress = false,
     this.iconColor = Colors.grey,
     Widget? loadingWidget,
@@ -93,10 +91,14 @@ class LocationSearchWidget extends StatefulWidget {
   @override
   State<LocationSearchWidget> createState() =>
       _LocationSearchWidgetState();
+
+  //  static State<LocationSearchWidget>? of(BuildContext context) =>
+  //     context.findAncestorStateOfType<State<LocationSearchWidget>>();
 }
 
 class _LocationSearchWidgetState extends State<LocationSearchWidget>
     {
+      final logger = Logger();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   List<OSMdata> _options = <OSMdata>[];
@@ -160,6 +162,9 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
       // App to enable the location services.
       while (!await Geolocator.isLocationServiceEnabled()) {}
     }
+    setState(() {
+      isLoading = true;
+    });
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     final currentPos = await Geolocator.getCurrentPosition();
@@ -167,9 +172,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
     // Query OpenStreetMap API to get
     // the address of the location
     var client = http.Client();
-    setState(() {
-      isLoading = true;
-    });
+    
     String url =
         "https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentPos.latitude}&lon=${currentPos.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
 
@@ -204,7 +207,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
   ///     data (Map): A map of data fetched from OpenStreetMap API
   OSMdata _getOSMData(Map data) {
     return OSMdata(
-          displayName: widget.lightAdress
+          displayName: !(widget.lightAdress!)
               ? data['display_name']
               : (data['address'] as Map)
                   .entries
@@ -243,7 +246,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
 
   @override
   void initState() {
-    onError = widget.onError ?? (e) => print(e);
+    onError = widget.onError ?? (e) => logger.e(e);
 
     super.initState();
   }
@@ -310,7 +313,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
                 focusNode: _focusNode,
                 decoration: InputDecoration(
                   hintText: widget.searchBarHintText,
-                  hintTextDirection: isRTL(widget.searchBarHintText)
+                  hintTextDirection: isRTL(widget.searchBarHintText!)
                       ? TextDirection.rtl
                       : TextDirection.ltr,
                   border: InputBorder.none,
@@ -376,7 +379,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
                 SizedBox(
                   width: MediaQuery.of(context).size.width - 120,
                   child: Text(
-                    widget.useCurrentPositionText,
+                    widget.currentPositionButtonText!,
                     style: TextStyle(
                         color: widget.searchBarTextColor,
                         fontSize: 16,
@@ -394,11 +397,54 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child:
-            isLoading
-                ? Center(child: widget.loadingWidget!)
-                :
-            _buildSearchBar());
+    return Scaffold(
+      body: SafeArea(
+          child:
+              isLoading
+                  ? Center(child: widget.loadingWidget!)
+                  :
+              _buildSearchBar()),
+    );
+  }
+}
+
+class LocationSearch {
+  static Future<OSMdata?>  show({
+required BuildContext context,
+    void Function(Exception e)? onError,
+    String? mapLanguage = 'en',
+    List<String>? countryCodes,
+    Color? searchBarBackgroundColor,
+    Color? searchBarTextColor = Colors.black87,
+    String? searchBarHintText = 'Search location',
+    String? currentPositionButtonText = 'Use current location',
+    Color? searchBarHintColor =  Colors.black87,
+    bool? lightAdress = false,
+    Color? iconColor = Colors.grey,
+    Widget? loadingWidget,
+// Mode mode = Mode.fullscreen,
+
+  }) {
+builder(BuildContext ctx) => LocationSearchWidget(
+          onPicked: ((data) => Navigator.pop(context, data)),
+          onError: onError,
+          mapLanguage: mapLanguage,
+          countryCodes: countryCodes,
+          searchBarBackgroundColor: searchBarBackgroundColor,
+          searchBarTextColor: searchBarTextColor,
+          searchBarHintText: searchBarHintText,
+          currentPositionButtonText: currentPositionButtonText,
+          searchBarHintColor: searchBarHintColor,
+          lightAdress: lightAdress,
+          iconColor: iconColor,
+          loadingWidget: loadingWidget,
+          // mode: mode,
+          // decoration: decoration,
+        );
+
+    // if (mode == Mode.overlay) {
+    //   return showDialog(context: context, builder: builder);
+    // }
+    return Navigator.push(context, MaterialPageRoute(builder: builder));
   }
 }

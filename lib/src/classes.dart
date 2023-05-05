@@ -30,3 +30,5 @@ class LatLong {
   final double longitude;
   LatLong(this.latitude, this.longitude);
 }
+
+enum Mode { overlay, fullscreen }
