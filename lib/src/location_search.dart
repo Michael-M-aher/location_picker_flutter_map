@@ -70,6 +70,11 @@ class LocationSearchWidget extends StatefulWidget {
 
   final String? currentPositionButtonText;
 
+  /// [mode] : mode of display: fullscreen or overlay
+  /// 
+
+  final Mode mode;
+
   const LocationSearchWidget({
     Key? key,
     required this.onPicked,
@@ -83,6 +88,7 @@ class LocationSearchWidget extends StatefulWidget {
     this.searchBarHintColor = Colors.black87,
     this.lightAdress = false,
     this.iconColor = Colors.grey,
+    this.mode = Mode.fullscreen,
     Widget? loadingWidget,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
@@ -90,8 +96,6 @@ class LocationSearchWidget extends StatefulWidget {
   @override
   State<LocationSearchWidget> createState() => _LocationSearchWidgetState();
 
-  //  static State<LocationSearchWidget>? of(BuildContext context) =>
-  //     context.findAncestorStateOfType<State<LocationSearchWidget>>();
 }
 
 class _LocationSearchWidgetState extends State<LocationSearchWidget> {
@@ -252,11 +256,10 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
   Widget _buildListView() {
     return ListView.builder(
         shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        physics:  widget.mode == Mode.overlay ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
         itemCount: _options.length > 5 ? 5 : _options.length,
         itemBuilder: (context, index) {
           return ListTile(
-            // leading: Icon(Icons.location_on, color: widget.iconColor),
             contentPadding: EdgeInsets.zero,
             title: Container(
               padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10),
@@ -294,7 +297,6 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
         children: [
           Container(
             padding: const EdgeInsets.only(left: 15),
-            // margin: const EdgeInsets.only(bottom: 15),
             decoration: BoxDecoration(
               color: widget.searchBarBackgroundColor ?? _defaultSearchBarColor,
               borderRadius: const BorderRadius.all(Radius.circular(15)),
@@ -326,7 +328,8 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
                     _debounce?.cancel();
                   }
                   setState(() {});
-                  _debounce = Timer(const Duration(milliseconds: 300), () async {
+                  _debounce =
+                      Timer(const Duration(milliseconds: 300), () async {
                     var client = http.Client();
                     try {
                       String url =
@@ -349,14 +352,18 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
                 }),
           ),
           _buildSelectCurrentPositionButton(),
-          StatefulBuilder(builder: ((context, setState) {
-            return _buildListView();
-          })),
+          Expanded(
+            child: StatefulBuilder(builder: ((context, setState) {
+              return _buildListView();
+            })),
+          ),
         ],
       ),
     );
   }
 
+  /// Button to select current location
+  /// 
   Widget _buildSelectCurrentPositionButton() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -376,7 +383,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
             ),
           ),
           SizedBox(
-            width: MediaQuery.of(context).size.width - 120,
+            width: widget.mode == Mode.overlay ? 195 : MediaQuery.of(context).size.width - 120,
             child: Text(
               widget.currentPositionButtonText!,
               style: TextStyle(
@@ -393,14 +400,37 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+
+/// this is used if mode = Mode.overlay
+/// 
+ Widget _buildDialog() {
+  return Dialog(
+    shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15))),
+              // content: const Text("Save successfully"),
+              child: SizedBox(
+                
+                  // height: MediaQuery.of(context).size.height - 300,
+                  child: isLoading
+              ? Center(child: widget.loadingWidget!)
+              :  _buildSearchBar())
+  );
+ }
+
+/// this is used if mode = Mode.fullscreen
+/// 
+Widget _buildScaffold() {
+  return Scaffold(
       body: SafeArea(
           child: isLoading
               ? Center(child: widget.loadingWidget!)
               : _buildSearchBar()),
     );
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.mode == Mode.overlay ? _buildDialog() : _buildScaffold();
   }
 }
 
@@ -418,7 +448,7 @@ class LocationSearch {
     bool? lightAdress = false,
     Color? iconColor = Colors.grey,
     Widget? loadingWidget,
-// Mode mode = Mode.fullscreen,
+    Mode mode = Mode.fullscreen,
   }) {
     builder(BuildContext ctx) => LocationSearchWidget(
           onPicked: ((data) => Navigator.pop(context, data)),
@@ -433,13 +463,12 @@ class LocationSearch {
           lightAdress: lightAdress,
           iconColor: iconColor,
           loadingWidget: loadingWidget,
-          // mode: mode,
-          // decoration: decoration,
+          mode: mode,
         );
 
-    // if (mode == Mode.overlay) {
-    //   return showDialog(context: context, builder: builder);
-    // }
+    if (mode == Mode.overlay) {
+      return showDialog(context: context, builder: builder);
+    }
     return Navigator.push(context, MaterialPageRoute(builder: builder));
   }
 }
