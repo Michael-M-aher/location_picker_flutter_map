@@ -1,9 +1,9 @@
-class OSMdata {
+class LocationData {
   final String displayName;
   final double latitude;
   final double longitude;
   final Map<String, dynamic> addressData;
-  OSMdata(
+  LocationData(
       {required this.displayName,
       required this.latitude,
       required this.longitude,
@@ -18,7 +18,7 @@ class OSMdata {
     if (other.runtimeType != runtimeType) {
       return false;
     }
-    return other is OSMdata && other.displayName == displayName;
+    return other is LocationData && other.displayName == displayName;
   }
 
   @override

@@ -73,10 +73,10 @@ class _MyAppState extends State<MyApp> {
             return TextButton(
               child: Text(_locationText),
               onPressed: () async {
-                OSMdata? osmData = await LocationSearch.show(context: context, lightAdress: true);
+                LocationData? locationData = await LocationSearch.show(context: context, lightAdress: true);
 
                 setState(() {
-                  _locationText = osmData!.displayName;
+                  _locationText = locationData!.displayName;
                 });
               },
             );

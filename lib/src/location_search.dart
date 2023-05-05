@@ -17,7 +17,7 @@ import 'classes.dart';
 class LocationSearchWidget extends StatefulWidget {
   /// [onPicked] : (callback) is triggered when you click on a location, returns current [PickedData] of the Marker
   ///
-  final void Function(OSMdata data)? onPicked;
+  final void Function(LocationData data)? onPicked;
 
   /// [onError] : (callback) is triggered when an error occurs while fetching location
   ///
@@ -101,7 +101,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
       final logger = Logger();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  List<OSMdata> _options = <OSMdata>[];
+  List<LocationData> _options = <LocationData>[];
   LatLng? initPosition;
   bool isLoading = false;
   late void Function(Exception e) onError;
@@ -124,8 +124,8 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
   /// from OpenStreetMap API
   ///
   /// Returns:
-  ///   A Future<OSMdata> object.
-  Future<OSMdata> _determinePosition() async {
+  ///   A Future<LocationData> object.
+  Future<LocationData> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -181,7 +181,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
       var decodedResponse =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
 
-      final posData = _getOSMData(decodedResponse);
+      final posData = _getLocationData(decodedResponse);
 
       setState(() {
         isLoading = false;
@@ -201,12 +201,12 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
     }
   }
 
-  /// Returns an OSMData object based on Map of data provided
+  /// Returns an LocationData object based on Map of data provided
   /// 
   /// args:
   ///     data (Map): A map of data fetched from OpenStreetMap API
-  OSMdata _getOSMData(Map data) {
-    return OSMdata(
+  LocationData _getLocationData(Map data) {
+    return LocationData(
           displayName: !(widget.lightAdress!)
               ? data['display_name']
               : (data['address'] as Map)
@@ -336,7 +336,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
                         jsonDecode(utf8.decode(response.bodyBytes))
                             as List<dynamic>;
                     _options = decodedResponse
-                        .map((e) =>_getOSMData(e))
+                        .map((e) =>_getLocationData(e))
                         .toList();
 
                     setState(() {});
@@ -409,7 +409,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget>
 }
 
 class LocationSearch {
-  static Future<OSMdata?>  show({
+  static Future<LocationData?>  show({
 required BuildContext context,
     void Function(Exception e)? onError,
     String? mapLanguage = 'en',
