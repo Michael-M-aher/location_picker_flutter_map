@@ -11,7 +11,7 @@ A Flutter package that provides Place search using Open Street Map.
 - Can be displayed in fullscreen mode or overlay mode
 - Easy to use and custom
 
-## Getting Started
+## Preview
 
 <img src="https://user-images.githubusercontent.com/62302576/236583981-6a7ca9e2-0f8f-439c-92f6-c64915d4569a.png" width="300" height="600" />
 <img src="https://user-images.githubusercontent.com/62302576/236583983-bbdc8e0f-0a70-42b0-9053-dc26a4c29138.png" width="300" height="600" />
@@ -163,29 +163,29 @@ To use, call the _*LocationSearch.show()*_ function
 
 _*LocationSearch*_ has the following parameters: 
 
-- [onError] : (callback) is triggered when an error occurs while fetching location
+- _*onError*_ : (callback) is triggered when an error occurs while fetching location
 
-- [language] : (String) set the language of the address text (default = 'en')
+- _*language*_ : (String) set the language of the address text (default = 'en')
 
-- [countryCodes] : (List) of countries to Limit search results to
+- _*countryCodes*_ : (List) of countries to Limit search results to
 
-- [loadingWidget] : (Widget) show custom  widget until the map finish initialization
+- _*loadingWidget*_ : (Widget) show custom  widget until the map finish initialization
 
-- [searchBarBackgroundColor] : (Color) change the background color of the search bar
+- _*searchBarBackgroundColor*_ : (Color) change the background color of the search bar
 
-- [searchBarTextColor] : (Color) change the color of the search bar text
+- _*searchBarTextColor*_ : (Color) change the color of the search bar text
 
-- [searchBarHintText] : (String) change the hint text of the search bar
+- _*searchBarHintText*_ : (String) change the hint text of the search bar
 
-- [searchBarHintColor] : (Color) change the color of the search bar hint text
+- _*searchBarHintColor*_ : (Color) change the color of the search bar hint text
 
-- [lightAdress] : (bool) if true, displayed and returned adresses will be lighter
+- _*lightAdress*_ : (bool) if true, displayed and returned adresses will be lighter
 
-- [iconColor] : (Color) change the color of the search bar text
+- _*iconColor*_ : (Color) change the color of the search bar text
 
-- [currentPositionButtonText] : (String) change the text of the button selecting current position
+- _*currentPositionButtonText*_ : (String) change the text of the button selecting current position
 
-- [mode] : mode of display: fullscreen or overlay
+- _*mode*_ : mode of display: fullscreen or overlay
 
 
 # Then Usage
@@ -229,11 +229,6 @@ TextButton(
 
 Pull requests are welcome. For major changes, please open an [issue](https://github.com/KomInc/flutter_location_search/issues) first to discuss what you would like to change.
 
-## Author
-
-👤 **Michael Maher**
-
-[@KomInc](https://github.com/KomInc)
 
 ## 📝 License
 
