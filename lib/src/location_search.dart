@@ -109,6 +109,9 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
 
   final _defaultSearchBarColor = Colors.grey[300];
 
+  final List<LocationData> _history = [];
+  final _historyManager = HistoryManager();
+
   /// It returns true if the text is RTL, false if it's LTR
   ///
   /// Args:
@@ -238,6 +241,30 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
     }
   }
 
+  void _loadHistory() async {
+    final historyJson = await _historyManager.getHistory();
+    if (historyJson.isNotEmpty) {
+      final List<dynamic> historyList = historyJson
+          .map(
+            (loc) => jsonDecode(loc),
+          )
+          .toList();
+      setState(() {
+        _history.addAll(
+            historyList.map((loc) => LocationData.fromJson(loc)).toList());
+      });
+      logger.d("get : ${_history}");
+    }
+  }
+
+  void _addToHistory(LocationData loc) async {
+    // setState(() {
+    //   _history.add(loc);
+    // });
+    logger.d(loc);
+    await _historyManager.addToHistory(jsonEncode(loc));
+  }
+
   @override
   void setState(fn) {
     if (mounted) {
@@ -247,9 +274,9 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
 
   @override
   void initState() {
-    onError = widget.onError ?? (e) => logger.e(e);
-
     super.initState();
+    onError = widget.onError ?? (e) => logger.e(e);
+    _loadHistory();
   }
 
   Widget _buildListView() {
@@ -258,10 +285,17 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
         physics: widget.mode == Mode.overlay
             ? const ClampingScrollPhysics()
             : const NeverScrollableScrollPhysics(),
-        itemCount: _options.length > 5 ? 5 : _options.length,
+        itemCount: _options.isEmpty
+            ? _history.length
+            : _options.length > 5
+                ? 5
+                : _options.length,
         itemBuilder: (context, index) {
+          final items = _options.isEmpty ? _history : _options;
           return ListTile(
             contentPadding: EdgeInsets.zero,
+            trailing:
+                _options.isEmpty ? Icon(Icons.watch_later_outlined) : null,
             title: Container(
               padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10),
               margin: const EdgeInsets.symmetric(vertical: 5),
@@ -269,15 +303,16 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
                   border: Border(
                       bottom: BorderSide(color: _defaultSearchBarColor!))),
               child: Text(
-                _options[index].address,
+                items[index].address,
                 style:
                     TextStyle(color: widget.searchBarTextColor, fontSize: 16),
               ),
             ),
             onTap: () async {
-              setAddressInSearchBar(_options[index].address);
+              if (_options.isNotEmpty) _addToHistory(items[index]);
+              setAddressInSearchBar(items[index].address);
 
-              widget.onPicked!(_options[index]);
+              widget.onPicked!(items[index]);
               _focusNode.unfocus();
               _options.clear();
               setState(() {});
