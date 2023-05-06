@@ -71,7 +71,7 @@ class LocationSearchWidget extends StatefulWidget {
   final String? currentPositionButtonText;
 
   /// [mode] : mode of display: fullscreen or overlay
-  /// 
+  ///
 
   final Mode mode;
 
@@ -95,7 +95,6 @@ class LocationSearchWidget extends StatefulWidget {
 
   @override
   State<LocationSearchWidget> createState() => _LocationSearchWidgetState();
-
 }
 
 class _LocationSearchWidgetState extends State<LocationSearchWidget> {
@@ -256,7 +255,9 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
   Widget _buildListView() {
     return ListView.builder(
         shrinkWrap: true,
-        physics:  widget.mode == Mode.overlay ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
+        physics: widget.mode == Mode.overlay
+            ? const ClampingScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
         itemCount: _options.length > 5 ? 5 : _options.length,
         itemBuilder: (context, index) {
           return ListTile(
@@ -273,7 +274,6 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
                     TextStyle(color: widget.searchBarTextColor, fontSize: 16),
               ),
             ),
-
             onTap: () async {
               setAddressInSearchBar(_options[index].address);
 
@@ -363,7 +363,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
   }
 
   /// Button to select current location
-  /// 
+  ///
   Widget _buildSelectCurrentPositionButton() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -383,7 +383,9 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
             ),
           ),
           SizedBox(
-            width: widget.mode == Mode.overlay ? 195 : MediaQuery.of(context).size.width - 120,
+            width: widget.mode == Mode.overlay
+                ? 195
+                : MediaQuery.of(context).size.width - 120,
             child: Text(
               widget.currentPositionButtonText!,
               style: TextStyle(
@@ -400,33 +402,31 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
     );
   }
 
+  /// this is used if mode = Mode.overlay
+  ///
+  Widget _buildDialog() {
+    return Dialog(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(15))),
+        // content: const Text("Save successfully"),
+        child: SizedBox(
 
-/// this is used if mode = Mode.overlay
-/// 
- Widget _buildDialog() {
-  return Dialog(
-    shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(15))),
-              // content: const Text("Save successfully"),
-              child: SizedBox(
-                
-                  // height: MediaQuery.of(context).size.height - 300,
-                  child: isLoading
-              ? Center(child: widget.loadingWidget!)
-              :  _buildSearchBar())
-  );
- }
+            // height: MediaQuery.of(context).size.height - 300,
+            child: isLoading
+                ? Center(child: widget.loadingWidget!)
+                : _buildSearchBar()));
+  }
 
-/// this is used if mode = Mode.fullscreen
-/// 
-Widget _buildScaffold() {
-  return Scaffold(
+  /// this is used if mode = Mode.fullscreen
+  ///
+  Widget _buildScaffold() {
+    return Scaffold(
       body: SafeArea(
           child: isLoading
               ? Center(child: widget.loadingWidget!)
               : _buildSearchBar()),
     );
-}
+  }
 
   @override
   Widget build(BuildContext context) {

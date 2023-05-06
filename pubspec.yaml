@@ -1,7 +1,8 @@
 name: flutter_location_search
-description: Package that provides Place search using Open Street Map
-version: 1.0.0
+description: Package that provides Place search using Open Street Map. It is easy to custom and can be displayed in fullscreen or overlay mode
+version: 1.0.2
 homepage: https://github.com/KomInc/flutter_location_search
+license: MIT
 
 environment:
   sdk: ">=2.17.6 <3.0.0"
