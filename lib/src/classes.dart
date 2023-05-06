@@ -53,10 +53,13 @@ class HistoryManager {
     return history ?? [];
   }
 
-  Future<void> addToHistory(String  itemJson) async {
+  Future<void> addToHistory(String  itemJson, int limit) async {
     final prefs = await SharedPreferences.getInstance();
-    final history = await getHistory();
+    List<String> history = await getHistory();
     history.add(itemJson);
+    if(history.length > limit) {
+      history = history.sublist(1);
+    }
     await prefs.setStringList(_historyKey, history);
   }
 }

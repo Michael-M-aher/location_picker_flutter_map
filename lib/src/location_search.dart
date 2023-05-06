@@ -75,6 +75,11 @@ class LocationSearchWidget extends StatefulWidget {
 
   final Mode mode;
 
+  /// [historyMaxLength] : (int) maximum length of history and suggested location
+  ///
+
+  final int historyMaxLength;
+
   const LocationSearchWidget({
     Key? key,
     required this.onPicked,
@@ -89,6 +94,7 @@ class LocationSearchWidget extends StatefulWidget {
     this.lightAdress = false,
     this.iconColor = Colors.grey,
     this.mode = Mode.fullscreen,
+    this.historyMaxLength = 5,
     Widget? loadingWidget,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
@@ -253,16 +259,12 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
         _history.addAll(
             historyList.map((loc) => LocationData.fromJson(loc)).toList());
       });
-      logger.d("get : ${_history}");
     }
   }
 
   void _addToHistory(LocationData loc) async {
-    // setState(() {
-    //   _history.add(loc);
-    // });
-    logger.d(loc);
-    await _historyManager.addToHistory(jsonEncode(loc));
+
+    await _historyManager.addToHistory(jsonEncode(loc), widget.historyMaxLength);
   }
 
   @override
@@ -287,8 +289,8 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
             : const NeverScrollableScrollPhysics(),
         itemCount: _options.isEmpty
             ? _history.length
-            : _options.length > 5
-                ? 5
+            : _options.length > widget.historyMaxLength
+                ? widget.historyMaxLength
                 : _options.length,
         itemBuilder: (context, index) {
           final items = _options.isEmpty ? _history : _options;
@@ -484,6 +486,7 @@ class LocationSearch {
     Color? iconColor = Colors.grey,
     Widget? loadingWidget,
     Mode mode = Mode.fullscreen,
+    int historyMaxLength = 5,
   }) {
     builder(BuildContext ctx) => LocationSearchWidget(
           onPicked: ((data) => Navigator.pop(context, data)),
@@ -499,6 +502,7 @@ class LocationSearch {
           iconColor: iconColor,
           loadingWidget: loadingWidget,
           mode: mode,
+          historyMaxLength : historyMaxLength,
         );
 
     if (mode == Mode.overlay) {
