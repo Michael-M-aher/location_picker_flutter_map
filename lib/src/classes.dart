@@ -1,16 +1,16 @@
 class LocationData {
-  final String displayName;
+  final String address;
   final double latitude;
   final double longitude;
   final Map<String, dynamic> addressData;
   LocationData(
-      {required this.displayName,
+      {required this.address,
       required this.latitude,
       required this.longitude,
       required this.addressData});
   @override
   String toString() {
-    return '$displayName, $latitude, $longitude';
+    return '$address, $latitude, $longitude';
   }
 
   @override
@@ -18,11 +18,11 @@ class LocationData {
     if (other.runtimeType != runtimeType) {
       return false;
     }
-    return other is LocationData && other.displayName == displayName;
+    return other is LocationData && other.address == address;
   }
 
   @override
-  int get hashCode => Object.hash(displayName, latitude, longitude);
+  int get hashCode => Object.hash(address, latitude, longitude);
 }
 
 class LatLong {

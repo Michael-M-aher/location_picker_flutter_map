@@ -23,9 +23,9 @@ class LocationSearchWidget extends StatefulWidget {
   ///
   final void Function(Exception e)? onError;
 
-  /// [mapLanguage] : (String) set the language of the map and address text (default = 'en')
+  /// [language] : (String) set the language of the map and address text (default = 'en')
   ///
-  final String? mapLanguage;
+  final String? language;
 
   /// [countryCodes] : Limit search results to one or more countries
   ///
@@ -79,7 +79,7 @@ class LocationSearchWidget extends StatefulWidget {
     Key? key,
     required this.onPicked,
     this.onError,
-    this.mapLanguage = 'en',
+    this.language = 'en',
     this.countryCodes,
     this.searchBarBackgroundColor,
     this.searchBarTextColor = Colors.black87,
@@ -176,7 +176,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
     var client = http.Client();
 
     String url =
-        "https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentPos.latitude}&lon=${currentPos.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
+        "https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentPos.latitude}&lon=${currentPos.longitude}&zoom=18&addressdetails=1&accept-language=${widget.language}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
 
     try {
       var response = await client.post(Uri.parse(url));
@@ -190,7 +190,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
       });
 
       // show the current position in search bar
-      setAddressInSearchBar(posData.displayName);
+      setAddressInSearchBar(posData.address);
 
       return posData;
     } on Exception catch (e) {
@@ -209,7 +209,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
   ///     data (Map): A map of data fetched from OpenStreetMap API
   LocationData _getLocationData(Map data) {
     return LocationData(
-        displayName: !(widget.lightAdress!)
+        address: !(widget.lightAdress!)
             ? data['display_name']
             : (data['address'] as Map)
                 .entries
@@ -230,10 +230,10 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
   /// the address of the location
   ///
   /// Args:
-  ///   displayName (String): The display name of the location.
-  void setAddressInSearchBar(String displayName) {
+  ///   address (String): The display name of the location.
+  void setAddressInSearchBar(String address) {
     try {
-      _searchController.text = displayName;
+      _searchController.text = address;
     } on Exception catch (e) {
       onError(e);
     }
@@ -268,14 +268,14 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
                   border: Border(
                       bottom: BorderSide(color: _defaultSearchBarColor!))),
               child: Text(
-                _options[index].displayName,
+                _options[index].address,
                 style:
                     TextStyle(color: widget.searchBarTextColor, fontSize: 16),
               ),
             ),
 
             onTap: () async {
-              setAddressInSearchBar(_options[index].displayName);
+              setAddressInSearchBar(_options[index].address);
 
               widget.onPicked!(_options[index]);
               _focusNode.unfocus();
@@ -333,7 +333,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
                     var client = http.Client();
                     try {
                       String url =
-                          "https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
+                          "https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.language}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
                       var response = await client.post(Uri.parse(url));
                       var decodedResponse =
                           jsonDecode(utf8.decode(response.bodyBytes))
@@ -438,7 +438,7 @@ class LocationSearch {
   static Future<LocationData?> show({
     required BuildContext context,
     void Function(Exception e)? onError,
-    String? mapLanguage = 'en',
+    String? language = 'en',
     List<String>? countryCodes,
     Color? searchBarBackgroundColor,
     Color? searchBarTextColor = Colors.black87,
@@ -453,7 +453,7 @@ class LocationSearch {
     builder(BuildContext ctx) => LocationSearchWidget(
           onPicked: ((data) => Navigator.pop(context, data)),
           onError: onError,
-          mapLanguage: mapLanguage,
+          language: language,
           countryCodes: countryCodes,
           searchBarBackgroundColor: searchBarBackgroundColor,
           searchBarTextColor: searchBarTextColor,
