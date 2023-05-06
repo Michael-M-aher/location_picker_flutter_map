@@ -156,9 +156,11 @@ import 'package:flutter_location_search/flutter_location_search.dart';
 
 To use, call the _*LocationSearch.show()*_ function
 
-    ```dart
+    ```
     LocationData? locationData = await LocationSearch.show(
-                    context: context, mode: Mode.fullscreen);
+                    context: context,
+                    mode: Mode.fullscreen
+                    );
     ```
 
 _*LocationSearch*_ has the following parameters: 
@@ -188,7 +190,7 @@ _*LocationSearch*_ has the following parameters:
 - _*mode*_ : mode of display: fullscreen or overlay
 
 
-# Then Usage
+# Usage
 
 Location proposals will be displayed when typing in the search bar.
 
