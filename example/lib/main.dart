@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:location_picker_flutter_map/location_picker_flutter_map.dart';
+import 'package:flutter_location_search/flutter_location_search.dart';
 
 void main() => runApp(const MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String _locationText = 'Tap here to search a place';
 
   @override
   Widget build(BuildContext context) {
@@ -12,20 +19,21 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Location Picker',
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: FlutterLocationPicker(
-            initZoom: 11,
-            minZoomLevel: 5,
-            maxZoomLevel: 16,
-            trackMyPosition: true,
-            searchBarBackgroundColor: Colors.white,
-            mapLanguage: 'ar',
-            onError: (e) => print(e),
-            onPicked: (pickedData) {
-              print(pickedData.latLong.latitude);
-              print(pickedData.latLong.longitude);
-              print(pickedData.address);
-              print(pickedData.addressData['country']);
-            }),
+        body: Center(
+          child: Builder(builder: (context) {
+            return TextButton(
+              child: Text(_locationText),
+              onPressed: () async {
+                LocationData? locationData = await LocationSearch.show(
+                    context: context, lightAdress: true, mode: Mode.fullscreen);
+
+                setState(() {
+                  _locationText = locationData!.address;
+                });
+              },
+            );
+          }),
+        ),
       ),
     );
   }
