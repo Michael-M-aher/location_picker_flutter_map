@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Updated README
+
 ## 1.1.0
 
 * Added History of latest location selected

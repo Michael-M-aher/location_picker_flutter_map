@@ -1,6 +1,6 @@
 # flutter_location_search
 
-A Flutter package that provides Place search using Open Street Map.
+A Flutter package that provides Place search with history of latest location searched using Open Street Map.
 
 [![Get the library](https://img.shields.io/badge/Get%20library-pub-blue)](https://pub.dev/packages/flutter_location_search) &nbsp; [![Example](https://img.shields.io/badge/Example-Ex-success)](https://pub.dev/packages/flutter_location_search/example)
 
@@ -13,7 +13,7 @@ A Flutter package that provides Place search using Open Street Map.
 
 ## Preview
 
-<img src="https://user-images.githubusercontent.com/62302576/236583981-6a7ca9e2-0f8f-439c-92f6-c64915d4569a.png" width="300" height="600" />
+<img src="https://user-images.githubusercontent.com/62302576/236583981-6a7ca9e2-0f8f-439c-92f6-c64915d4569a.png" width="200" height="400" />
 <img src="https://user-images.githubusercontent.com/62302576/236583983-bbdc8e0f-0a70-42b0-9053-dc26a4c29138.png" width="300" height="600" />
 <img src="https://user-images.githubusercontent.com/62302576/236583986-c46deb7a-0a3c-40b8-880a-604a614a0b84.png" width="300" height="600" />
 
@@ -144,7 +144,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      flutter_location_search: ^1.1.0
+      flutter_location_search: ^1.1.1
 
 ## Getting Started
 
@@ -204,6 +204,11 @@ _*LocationData*_ has three properties.
 2. longitude
 3. address `//String address`
 4. addressData `//Map<String, dynamic> contains address details`
+
+The package also comes with a history of latest searched places. The amount of places to historicize is set by _*historyMaxLength*_ parameter.
+
+<img src="https://user-images.githubusercontent.com/62302576/236868469-e244613f-32be-46e4-9bcf-efea72f27ef5.png" width="200" height="400" />
+<img src="https://user-images.githubusercontent.com/62302576/236868476-fff61a67-49c3-4300-a74f-c9518db38d33.png" width="200" height="400" />
 
 # Example
 
