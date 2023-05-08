@@ -14,8 +14,8 @@ A Flutter package that provides Place search with history of latest location sea
 ## Preview
 
 <img src="https://user-images.githubusercontent.com/62302576/236583981-6a7ca9e2-0f8f-439c-92f6-c64915d4569a.png" width="200" height="400" />
-<img src="https://user-images.githubusercontent.com/62302576/236583983-bbdc8e0f-0a70-42b0-9053-dc26a4c29138.png" width="300" height="600" />
-<img src="https://user-images.githubusercontent.com/62302576/236583986-c46deb7a-0a3c-40b8-880a-604a614a0b84.png" width="300" height="600" />
+<img src="https://user-images.githubusercontent.com/62302576/236583983-bbdc8e0f-0a70-42b0-9053-dc26a4c29138.png" width="200" height="400" />
+<img src="https://user-images.githubusercontent.com/62302576/236583986-c46deb7a-0a3c-40b8-880a-604a614a0b84.png" width="200" height="400" />
 
 ## Setup
 
