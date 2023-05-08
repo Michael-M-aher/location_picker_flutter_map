@@ -33,7 +33,6 @@ class LocationData {
   factory LocationData.fromJson(Map<String, dynamic> json) =>
       _$LocationDataFromJson(json);
   Map<String, dynamic> toJson() => _$LocationDataToJson(this);
-
 }
 
 class LatLong {
@@ -53,12 +52,12 @@ class HistoryManager {
     return history ?? [];
   }
 
-  Future<void> addToHistory(String  itemJson, int limit) async {
+  Future<void> addToHistory(String itemJson, int limit) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> history = await getHistory();
     history.add(itemJson);
-    history =  history.toSet().toList();
-    if(history.length > limit) {
+    history = history.toSet().toList();
+    if (history.length > limit) {
       history = history.sublist(1);
     }
     await prefs.setStringList(_historyKey, history);

@@ -1,3 +1,8 @@
+## 1.1.0
+
+* Added History of latest location selected
+* Added progress indicator for fetching current location
+
 ## 1.0.2
 
 * Completed description in pubspec.yaml and formatted files

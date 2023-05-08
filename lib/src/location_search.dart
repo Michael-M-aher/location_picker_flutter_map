@@ -298,9 +298,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
           return ListTile(
             contentPadding: EdgeInsets.zero,
             title: _options.isEmpty
-                ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Container(
                       margin: const EdgeInsets.only(right: 15),
                       child: Icon(
@@ -462,7 +460,15 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
               maxLines: 1,
             ),
           ),
-          _isCurrentLocationLoading? SizedBox( width: 23, height: 23, child:  CircularProgressIndicator(color: widget.iconColor, strokeWidth: 3,)) : Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
+          _isCurrentLocationLoading
+              ? SizedBox(
+                  width: 23,
+                  height: 23,
+                  child: CircularProgressIndicator(
+                    color: widget.iconColor,
+                    strokeWidth: 3,
+                  ))
+              : Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
         ]),
       ),
     );

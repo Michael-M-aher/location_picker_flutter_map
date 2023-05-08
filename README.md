@@ -144,7 +144,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      flutter_location_search: ^1.0.0
+      flutter_location_search: ^1.1.0
 
 ## Getting Started
 
@@ -187,7 +187,9 @@ _*LocationSearch*_ has the following parameters:
 
 - _*currentPositionButtonText*_ : (String) change the text of the button selecting current position
 
-- _*mode*_ : mode of display: fullscreen or overlay
+- _*mode*_ : mode of display (fullscreen or overlay)
+
+- _*historyMaxLength*_ : (int) set the capacity or maximum length of history
 
 
 # Usage
