@@ -117,6 +117,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
 
   final List<LocationData> _history = [];
   final _historyManager = HistoryManager();
+  bool _isCurrentLocationLoading = false;
 
   /// It returns true if the text is RTL, false if it's LTR
   ///
@@ -173,7 +174,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
       while (!await Geolocator.isLocationServiceEnabled()) {}
     }
     setState(() {
-      isLoading = true;
+      _isCurrentLocationLoading = true;
     });
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
@@ -194,7 +195,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
       final posData = _getLocationData(decodedResponse);
 
       setState(() {
-        isLoading = false;
+        _isCurrentLocationLoading = false;
       });
 
       // show the current position in search bar
@@ -206,7 +207,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
       return Future.error(e);
     } finally {
       setState(() {
-        isLoading = false;
+        _isCurrentLocationLoading = false;
       });
     }
   }
@@ -263,8 +264,8 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
   }
 
   void _addToHistory(LocationData loc) async {
-
-    await _historyManager.addToHistory(jsonEncode(loc), widget.historyMaxLength);
+    await _historyManager.addToHistory(
+        jsonEncode(loc), widget.historyMaxLength);
   }
 
   @override
@@ -296,20 +297,46 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
           final items = _options.isEmpty ? _history : _options;
           return ListTile(
             contentPadding: EdgeInsets.zero,
-            trailing:
-                _options.isEmpty ? Icon(Icons.watch_later_outlined) : null,
-            title: Container(
-              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10),
-              margin: const EdgeInsets.symmetric(vertical: 5),
-              decoration: BoxDecoration(
-                  border: Border(
-                      bottom: BorderSide(color: _defaultSearchBarColor!))),
-              child: Text(
-                items[index].address,
-                style:
-                    TextStyle(color: widget.searchBarTextColor, fontSize: 16),
-              ),
-            ),
+            title: _options.isEmpty
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(right: 15),
+                      child: Icon(
+                        Icons.watch_later_outlined,
+                        color: widget.iconColor,
+                      ),
+                    ),
+                    SizedBox(
+                      width: widget.mode == Mode.overlay
+                          ? 195
+                          : MediaQuery.of(context).size.width - 120,
+                      child: Text(
+                        items[index].address,
+                        style: TextStyle(
+                            color: widget.searchBarTextColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            overflow: TextOverflow.ellipsis),
+                        maxLines: 1,
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
+                  ])
+                : Container(
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10),
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom:
+                                BorderSide(color: _defaultSearchBarColor!))),
+                    child: Text(
+                      items[index].address,
+                      style: TextStyle(
+                          color: widget.searchBarTextColor, fontSize: 16),
+                    ),
+                  ),
             onTap: () async {
               if (_options.isNotEmpty) _addToHistory(items[index]);
               setAddressInSearchBar(items[index].address);
@@ -409,7 +436,9 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
           border: Border(bottom: BorderSide(color: _defaultSearchBarColor!))),
       child: TextButton(
         onPressed: (() async {
-          widget.onPicked!(await _determinePosition());
+          final currentPos = await _determinePosition();
+          _addToHistory(currentPos);
+          widget.onPicked!(currentPos);
         }),
         child: Row(children: [
           Container(
@@ -433,7 +462,7 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
               maxLines: 1,
             ),
           ),
-          Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
+          _isCurrentLocationLoading? SizedBox( width: 23, height: 23, child:  CircularProgressIndicator(color: widget.iconColor, strokeWidth: 3,)) : Icon(Icons.chevron_right, color: widget.iconColor, size: 30)
         ]),
       ),
     );
@@ -502,7 +531,7 @@ class LocationSearch {
           iconColor: iconColor,
           loadingWidget: loadingWidget,
           mode: mode,
-          historyMaxLength : historyMaxLength,
+          historyMaxLength: historyMaxLength,
         );
 
     if (mode == Mode.overlay) {

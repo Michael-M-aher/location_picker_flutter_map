@@ -57,6 +57,7 @@ class HistoryManager {
     final prefs = await SharedPreferences.getInstance();
     List<String> history = await getHistory();
     history.add(itemJson);
+    history =  history.toSet().toList();
     if(history.length > limit) {
       history = history.sublist(1);
     }
