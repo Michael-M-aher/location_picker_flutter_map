@@ -234,6 +234,15 @@ TextButton(
 
 &nbsp;
 
+## Dependencies version solving issues
+
+You may encounter a dependency version failure because this package uses the _0.18.0_ version of *_intl_* and some frequently used packages such as *_firebase_auth_* use its _0.17.0_ version.
+To solve this issue, you can add the following to your *_pubspec.yaml_* file :
+```yaml
+dependency_overrides:
+  intl: ^0.18.0
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an [issue](https://github.com/KomInc/flutter_location_search/issues) first to discuss what you would like to change.
