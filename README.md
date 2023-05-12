@@ -144,7 +144,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      flutter_location_search: ^1.1.1
+      flutter_location_search: ^1.1.3
 
 ## Getting Started
 
@@ -233,6 +233,15 @@ TextButton(
 ```
 
 &nbsp;
+
+## Dependencies version solving issues
+
+You may encounter a dependency version failure because this package uses the _0.18.0_ version of *_intl_* and some frequently used packages such as *_firebase_auth_* use its _0.17.0_ version.
+To solve this issue, you can add the following to your *_pubspec.yaml_* file :
+```yaml
+dependency_overrides:
+  intl: ^0.18.0
+```
 
 ## Contributing
 

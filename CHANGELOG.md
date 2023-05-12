@@ -1,3 +1,11 @@
+## 1.1.3
+
+* Upgrade intl version from 0.17.0 to 0.18.0
+
+## 1.1.2
+
+* Removed unused dependency
+
 ## 1.1.1
 
 * Updated README

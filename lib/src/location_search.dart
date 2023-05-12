@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
-import 'package:latlong2/latlong.dart';
 import 'package:logger/logger.dart';
 
 import 'classes.dart';
@@ -108,7 +107,6 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   List<LocationData> _options = <LocationData>[];
-  LatLng? initPosition;
   bool isLoading = false;
   late void Function(Exception e) onError;
   Timer? _debounce;
