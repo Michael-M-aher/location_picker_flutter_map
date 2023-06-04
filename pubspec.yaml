@@ -1,22 +1,23 @@
 name: location_picker_flutter_map
 description: Package that provides Place search and Location picker for flutter maps with alot of cusomizations using Open Street Map
-version: 1.2.0
+version: 1.2.1
 homepage: https://github.com/Michael-M-aher/location_picker_flutter_map
 
 environment:
-  sdk: ">=2.17.6 <3.0.0"
+  sdk: '>=2.17.6 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_map: ^3.1.0
+  flutter_map: ^4.0.0
   geolocator: ^9.0.2
   http: ^0.13.5
-  intl: ^0.18.0
+  intl: ^0.18.1
   latlong2: ^0.8.1
-  flutter_map_location_marker: ^5.2.0+2
-
+  url_launcher: ^6.1.11
+  flutter_map_location_marker: ^6.0.0
+  
 dev_dependencies:
   flutter_lints: ^2.0.1
   flutter_test:

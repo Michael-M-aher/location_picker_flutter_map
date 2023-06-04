@@ -1,3 +1,9 @@
+## 1.2.1
+
+* Added OSM copyrights Badge
+* Support more customizations for Select Location button and Search bar
+* Update dependencies
+
 ## 1.2.0
 
 * Add Current Location Pointer

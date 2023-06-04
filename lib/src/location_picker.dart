@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
 
+import 'Widgets/copyright_osm_widget.dart';
 import 'Widgets/wide_button.dart';
 import 'classes.dart';
 
@@ -71,22 +72,18 @@ class FlutterLocationPicker extends StatefulWidget {
 
   /// [showZoomController] : (bool) enable/disable zoom in and zoom out buttons (default = true)
   ///
-
   final bool showZoomController;
 
   /// [showLocationController] : (bool) enable/disable locate me button (default = true)
   ///
-
   final bool showLocationController;
 
   /// [showSelectLocationButton] : (bool) enable/disable select location button (default = true)
   ///
-
   final bool showSelectLocationButton;
 
   /// [mapAnimationDuration] : (Duration) time duration of the move from point to point animation (default = Duration(milliseconds: 2000))
   ///
-
   final Duration mapAnimationDuration;
 
   /// [mapLoadingBackgroundColor] : (Color) change the background color of the loading screen before the map initialized
@@ -101,44 +98,72 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final Color? selectLocationTextColor;
 
+  /// [selectLocationButtonWidth] : (double) change the width of the select Location button
+  ///
+  final double? selectLocationButtonWidth;
+
+  /// [selectLocationButtonHeight] : (double) change the height of the select Location button
+  ///
+  final double? selectLocationButtonHeight;
+
+  /// [selectLocationButtonPositionTop] : (double) change the top position of the select Location button (default = null)
+  ///
+  final double? selectLocationButtonPositionTop;
+
+  /// [selectLocationButtonPositionRight] : (double) change the right position of the select Location button (default = 0)
+  ///
+  final double? selectLocationButtonPositionRight;
+
+  /// [selectLocationButtonPositionLeft] : (double) change the left position of the select Location button (default = 0)
+  ///
+  final double? selectLocationButtonPositionLeft;
+
+  /// [selectLocationButtonPositionBottom] : (double) change the bottom position of the select Location button (default = 3)
+  ///
+  final double? selectLocationButtonPositionBottom;
+
   /// [showSearchBar] : (bool) enable/disable search bar (default = true)
   ///
-
   final bool showSearchBar;
 
   /// [searchBarBackgroundColor] : (Color) change the background color of the search bar
   ///
-
   final Color? searchBarBackgroundColor;
 
   /// [searchBarTextColor] : (Color) change the color of the search bar text
   ///
-
   final Color? searchBarTextColor;
 
   /// [searchBarHintText] : (String) change the hint text of the search bar
   ///
-
   final String searchBarHintText;
 
   /// [searchBarHintColor] : (Color) change the color of the search bar hint text
   ///
-
   final Color? searchBarHintColor;
+
+  /// [searchbarInputBorder] : (OutlineInputBorder) change the border of the search bar
+  ///
+  final OutlineInputBorder? searchbarInputBorder;
+
+  /// [searchbarInputFocusBorder] : (OutlineInputBorder) change the border of the search bar when focused
+  ///
+  final OutlineInputBorder? searchbarInputFocusBorderp;
+
+  /// [searchbarBorderRadius] : (BorderRadiusGeometry) change the border radius of the search bar
+  ///
+  final BorderRadiusGeometry? searchbarBorderRadius;
 
   /// [zoomButtonsColor] : (Color) change the color of the zoom buttons icons
   ///
-
   final Color? zoomButtonsColor;
 
   /// [zoomButtonsBackgroundColor] : (Color) change the background color of the zoom buttons
   ///
-
   final Color? zoomButtonsBackgroundColor;
 
   /// [locationButtonsColor] : (Color) change the color of the location button icon
   ///
-
   final Color? locationButtonsColor;
 
   /// [locationButtonBackgroundColor] : (Color) change the background color of the location button
@@ -152,6 +177,38 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [markerIconOffset] : (double) change the marker icon offset in y direction (default = 50.0)
   ///
   final double markerIconOffset;
+
+  /// [showContributorBadgeForOSM] : (bool) for copyright of osm, we need to add badge in bottom of the map (default false)
+  ///
+  final bool showContributorBadgeForOSM;
+
+  /// [contributorBadgeForOSMColor] : (Color) change the color of the badge (default Colors.grey[300])
+  ///
+  final Color? contributorBadgeForOSMColor;
+
+  /// [contributorBadgeForOSMTextColor] : (Color) change the color of the badge text (default Colors.blue)
+  ///
+  final Color contributorBadgeForOSMTextColor;
+
+  /// [contributorBadgeForOSMText] : (String) change the text of the badge (default 'OpenStreetMap contributors')
+  ///
+  final String contributorBadgeForOSMText;
+
+  // [contributorBadgeForOSMPositionTop] : (double) change the position of the badge from top (default 0)
+  ///
+  final double? contributorBadgeForOSMPositionTop;
+
+  /// [contributorBadgeForOSMPositionLeft] : (double) change the position of the badge from left (default null)
+  ///
+  final double? contributorBadgeForOSMPositionLeft;
+
+  /// [contributorBadgeForOSMPositionRight] : (double) change the position of the badge from right (default 0)
+  ///
+  final double? contributorBadgeForOSMPositionRight;
+
+  /// [contributorBadgeForOSMPositionBottom] : (double) change the position of the badge from bottom (default -6)
+  ///
+  final double? contributorBadgeForOSMPositionBottom;
 
   const FlutterLocationPicker({
     Key? key,
@@ -173,11 +230,20 @@ class FlutterLocationPicker extends StatefulWidget {
     this.showCurrentLocationPointer = true,
     this.selectLocationButtonStyle,
     this.selectLocationTextColor,
+    this.selectLocationButtonWidth,
+    this.selectLocationButtonHeight,
+    this.selectLocationButtonPositionTop,
+    this.selectLocationButtonPositionRight = 0,
+    this.selectLocationButtonPositionLeft = 0,
+    this.selectLocationButtonPositionBottom = 3,
     this.showSearchBar = true,
     this.searchBarBackgroundColor,
     this.searchBarTextColor,
     this.searchBarHintText = 'Search location',
     this.searchBarHintColor,
+    this.searchbarInputBorder,
+    this.searchbarInputFocusBorderp,
+    this.searchbarBorderRadius,
     this.mapLoadingBackgroundColor,
     this.locationButtonBackgroundColor,
     this.zoomButtonsBackgroundColor,
@@ -185,6 +251,14 @@ class FlutterLocationPicker extends StatefulWidget {
     this.locationButtonsColor,
     this.markerIcon,
     this.markerIconOffset = 50.0,
+    this.showContributorBadgeForOSM = false,
+    this.contributorBadgeForOSMColor,
+    this.contributorBadgeForOSMTextColor = Colors.blue,
+    this.contributorBadgeForOSMText = 'OpenStreetMap contributors',
+    this.contributorBadgeForOSMPositionTop,
+    this.contributorBadgeForOSMPositionLeft,
+    this.contributorBadgeForOSMPositionRight = 0,
+    this.contributorBadgeForOSMPositionBottom = -6,
     Widget? loadingWidget,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
@@ -459,7 +533,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         decoration: BoxDecoration(
           color: widget.searchBarBackgroundColor ??
               Theme.of(context).colorScheme.background,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius:
+              widget.searchbarBorderRadius ?? BorderRadius.circular(5),
         ),
         child: Column(
           children: [
@@ -475,8 +550,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                   hintTextDirection: isRTL(widget.searchBarHintText)
                       ? TextDirection.rtl
                       : TextDirection.ltr,
-                  border: inputBorder,
-                  focusedBorder: inputFocusBorder,
+                  border: widget.searchbarInputBorder ?? inputBorder,
+                  focusedBorder:
+                      widget.searchbarInputFocusBorderp ?? inputFocusBorder,
                   hintStyle: TextStyle(color: widget.searchBarHintColor),
                   suffixIcon: IconButton(
                     onPressed: () => _searchController.clear(),
@@ -633,25 +709,30 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   Widget _buildSelectButton() {
     return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
+      top: widget.selectLocationButtonPositionTop,
+      bottom: widget.selectLocationButtonPositionBottom,
+      left: widget.selectLocationButtonPositionLeft,
+      right: widget.selectLocationButtonPositionRight,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: WideButton(widget.selectLocationButtonText,
-              onPressed: () async {
-            setState(() {
-              isLoading = true;
-            });
-            pickData().then((value) {
-              widget.onPicked(value);
-            }, onError: (e) => onError(e)).whenComplete(() => setState(() {
-                  isLoading = false;
-                }));
-          },
-              style: widget.selectLocationButtonStyle,
-              textColor: widget.selectLocationTextColor),
+          child: WideButton(
+            widget.selectLocationButtonText,
+            onPressed: () async {
+              setState(() {
+                isLoading = true;
+              });
+              pickData().then((value) {
+                widget.onPicked(value);
+              }, onError: (e) => onError(e)).whenComplete(() => setState(() {
+                    isLoading = false;
+                  }));
+            },
+            style: widget.selectLocationButtonStyle,
+            textColor: widget.selectLocationTextColor,
+            width: widget.selectLocationButtonWidth,
+            height: widget.selectLocationButtonHeight,
+          ),
         ),
       ),
     );
@@ -667,7 +748,20 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           if (isLoading) Center(child: widget.loadingWidget!),
           _buildControllerButtons(),
           if (widget.showSearchBar) _buildSearchBar(),
-          if (widget.showSelectLocationButton) _buildSelectButton()
+          if (widget.showContributorBadgeForOSM) ...[
+            Positioned(
+              top: widget.contributorBadgeForOSMPositionTop,
+              bottom: widget.contributorBadgeForOSMPositionBottom,
+              left: widget.contributorBadgeForOSMPositionLeft,
+              right: widget.contributorBadgeForOSMPositionRight,
+              child: CopyrightOSMWidget(
+                badgeText: widget.contributorBadgeForOSMText,
+                badgeTextColor: widget.contributorBadgeForOSMTextColor,
+                badgeColor: widget.contributorBadgeForOSMColor,
+              ),
+            ),
+          ],
+          if (widget.showSelectLocationButton) _buildSelectButton(),
         ],
       ),
     );
