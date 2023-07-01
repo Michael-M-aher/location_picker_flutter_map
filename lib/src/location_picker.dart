@@ -708,62 +708,62 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   }
 
   Widget _buildSelectButton() {
-    return Positioned(
-      top: widget.selectLocationButtonPositionTop,
-      bottom: widget.selectLocationButtonPositionBottom,
-      left: widget.selectLocationButtonPositionLeft,
-      right: widget.selectLocationButtonPositionRight,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: WideButton(
-            widget.selectLocationButtonText,
-            onPressed: () async {
-              setState(() {
-                isLoading = true;
-              });
-              pickData().then((value) {
-                widget.onPicked(value);
-              }, onError: (e) => onError(e)).whenComplete(() => setState(() {
-                    isLoading = false;
-                  }));
-            },
-            style: widget.selectLocationButtonStyle,
-            textColor: widget.selectLocationTextColor,
-            width: widget.selectLocationButtonWidth,
-            height: widget.selectLocationButtonHeight,
+    return SafeArea(
+      child: Positioned(
+        top: widget.selectLocationButtonPositionTop,
+        bottom: widget.selectLocationButtonPositionBottom,
+        left: widget.selectLocationButtonPositionLeft,
+        right: widget.selectLocationButtonPositionRight,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: WideButton(
+              widget.selectLocationButtonText,
+              onPressed: () async {
+                setState(() {
+                  isLoading = true;
+                });
+                pickData().then((value) {
+                  widget.onPicked(value);
+                }, onError: (e) => onError(e)).whenComplete(() => setState(() {
+                      isLoading = false;
+                    }));
+              },
+              style: widget.selectLocationButtonStyle,
+              textColor: widget.selectLocationTextColor,
+              width: widget.selectLocationButtonWidth,
+              height: widget.selectLocationButtonHeight,
+            ),
           ),
         ),
-      ),
+      )
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Stack(
-        children: [
-          _buildMap(),
-          if (!isLoading) _buildMarker(),
-          if (isLoading) Center(child: widget.loadingWidget!),
-          _buildControllerButtons(),
-          if (widget.showSearchBar) _buildSearchBar(),
-          if (widget.showContributorBadgeForOSM) ...[
-            Positioned(
-              top: widget.contributorBadgeForOSMPositionTop,
-              bottom: widget.contributorBadgeForOSMPositionBottom,
-              left: widget.contributorBadgeForOSMPositionLeft,
-              right: widget.contributorBadgeForOSMPositionRight,
-              child: CopyrightOSMWidget(
-                badgeText: widget.contributorBadgeForOSMText,
-                badgeTextColor: widget.contributorBadgeForOSMTextColor,
-                badgeColor: widget.contributorBadgeForOSMColor,
-              ),
+    return Stack(
+      children: [
+        _buildMap(),
+        if (!isLoading) _buildMarker(),
+        if (isLoading) Center(child: widget.loadingWidget!),
+        _buildControllerButtons(),
+        if (widget.showSearchBar) _buildSearchBar(),
+        if (widget.showContributorBadgeForOSM) ...[
+          Positioned(
+            top: widget.contributorBadgeForOSMPositionTop,
+            bottom: widget.contributorBadgeForOSMPositionBottom,
+            left: widget.contributorBadgeForOSMPositionLeft,
+            right: widget.contributorBadgeForOSMPositionRight,
+            child: CopyrightOSMWidget(
+              badgeText: widget.contributorBadgeForOSMText,
+              badgeTextColor: widget.contributorBadgeForOSMTextColor,
+              badgeColor: widget.contributorBadgeForOSMColor,
             ),
-          ],
-          if (widget.showSelectLocationButton) _buildSelectButton(),
+          ),
         ],
-      ),
-    );
+        if (widget.showSelectLocationButton) _buildSelectButton(),
+      ],
+    ),
   }
 }
