@@ -1,14 +1,14 @@
 # This is a generated file; do not edit or check into version control.
-flutter_compass=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\flutter_compass-0.7.0\\
-geolocator=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator-9.0.2\\
-geolocator_android=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_android-4.1.8\\
-geolocator_apple=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_apple-2.2.5\\
-geolocator_web=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_web-2.1.6\\
-geolocator_windows=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_windows-0.1.1\\
-url_launcher=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher-6.1.11\\
-url_launcher_android=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_android-6.0.35\\
-url_launcher_ios=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_ios-6.1.4\\
-url_launcher_linux=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_linux-3.0.5\\
-url_launcher_macos=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_macos-3.0.5\\
-url_launcher_web=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_web-2.0.17\\
-url_launcher_windows=C:\\Users\\misho\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_windows-3.0.6\\
+flutter_compass=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\flutter_compass-0.7.0\\
+geolocator=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator-9.0.2\\
+geolocator_android=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_android-4.2.2\\
+geolocator_apple=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_apple-2.2.7\\
+geolocator_web=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_web-2.1.6\\
+geolocator_windows=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\geolocator_windows-0.1.1\\
+url_launcher=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher-6.1.12\\
+url_launcher_android=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_android-6.0.37\\
+url_launcher_ios=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_ios-6.1.4\\
+url_launcher_linux=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_linux-3.0.5\\
+url_launcher_macos=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_macos-3.0.6\\
+url_launcher_web=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_web-2.0.18\\
+url_launcher_windows=C:\\Users\\Dell\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\url_launcher_windows-3.0.7\\

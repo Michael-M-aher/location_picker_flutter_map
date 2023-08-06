@@ -13,18 +13,19 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: FlutterLocationPicker(
+            selectedLocationButtonTextstyle: const TextStyle(fontSize: 18),
             initZoom: 11,
             minZoomLevel: 5,
             maxZoomLevel: 16,
             trackMyPosition: true,
             searchBarBackgroundColor: Colors.white,
-            mapLanguage: 'ar',
+            mapLanguage: 'eng',
             onError: (e) => print(e),
             onPicked: (pickedData) {
               print(pickedData.latLong.latitude);
               print(pickedData.latLong.longitude);
               print(pickedData.address);
-              print(pickedData.addressData['country']);
+              print(pickedData.addressData);
             }),
       ),
     );

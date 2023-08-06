@@ -94,10 +94,6 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final ButtonStyle? selectLocationButtonStyle;
 
-  /// [selectLocationTextColor] : (Color) change the color of the select Location text
-  ///
-  final Color? selectLocationTextColor;
-
   /// [selectLocationButtonWidth] : (double) change the width of the select Location button
   ///
   final double? selectLocationButtonWidth;
@@ -105,6 +101,9 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [selectLocationButtonHeight] : (double) change the height of the select Location button
   ///
   final double? selectLocationButtonHeight;
+
+  /// [selectedLocationButtonTextstyle] : set the style of the button text
+  final TextStyle selectedLocationButtonTextstyle;
 
   /// [selectLocationButtonPositionTop] : (double) change the top position of the select Location button (default = null)
   ///
@@ -210,9 +209,22 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final double? contributorBadgeForOSMPositionBottom;
 
+  /// [currLocationIcon] : set the current location iconData
+  final IconData currLocationIcon;
+
+  /// [currLocationColor] : set the current location icon color
+  final Color currLocationColor;
+
+  /// [currLocationSize] : set the current location icon size
+  final double currLocationSize;
+
   const FlutterLocationPicker({
     Key? key,
     required this.onPicked,
+    this.selectedLocationButtonTextstyle = const TextStyle(fontSize: 20),
+    this.currLocationSize = 60,
+    this.currLocationColor = Colors.blue,
+    this.currLocationIcon = Icons.location_pin,
     this.onError,
     this.initPosition,
     this.stepZoom = 1,
@@ -229,7 +241,6 @@ class FlutterLocationPicker extends StatefulWidget {
     this.showSelectLocationButton = true,
     this.showCurrentLocationPointer = true,
     this.selectLocationButtonStyle,
-    this.selectLocationTextColor,
     this.selectLocationButtonWidth,
     this.selectLocationButtonHeight,
     this.selectLocationButtonPositionTop,
@@ -383,9 +394,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   ///   longitude (double): The longitude of the location.
   void setNameCurrentPos(double latitude, double longitude) async {
     var client = http.Client();
-    setState(() {
-      isLoading = true;
-    });
+    // setState(() {
+    //   isLoading = true;
+    // });
     String url =
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
 
@@ -394,16 +405,16 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       var decodedResponse =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
       _searchController.text =
-          decodedResponse['display_name'] ?? "Search Location";
-      setState(() {
-        isLoading = false;
-      });
+          decodedResponse['display_name'] ?? "This Location is not accessible";
+      // setState(() {
+      //   isLoading = false;
+      // });
     } on Exception catch (e) {
       onError(e);
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      // setState(() {
+      //   isLoading = false;
+      // });
     }
   }
 
@@ -422,8 +433,17 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     var response = await client.post(Uri.parse(url));
     var decodedResponse =
         jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
-    String displayName = decodedResponse['display_name'];
-    return PickedData(center, displayName, decodedResponse['address']);
+    String displayName = "This Location is not accessible";
+    Map<String, dynamic> address;
+
+    if (decodedResponse['display_name'] != null) {
+      displayName = decodedResponse['display_name'];
+      address = decodedResponse['address'];
+    } else {
+      center = LatLong(0, 0);
+      address = decodedResponse as Map<String, dynamic>;
+    }
+    return PickedData(center, displayName, address);
   }
 
   @override
@@ -697,10 +717,10 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       child: IgnorePointer(
         child: Center(
           child: widget.markerIcon ??
-              const Icon(
-                Icons.location_pin,
-                color: Colors.red,
-                size: 50,
+              Icon(
+                widget.currLocationIcon,
+                color: widget.currLocationColor,
+                size: widget.currLocationSize,
               ),
         ),
       ),
@@ -728,8 +748,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                     isLoading = false;
                   }));
             },
+            textStyle: widget.selectedLocationButtonTextstyle,
             style: widget.selectLocationButtonStyle,
-            textColor: widget.selectLocationTextColor,
             width: widget.selectLocationButtonWidth,
             height: widget.selectLocationButtonHeight,
           ),
