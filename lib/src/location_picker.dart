@@ -736,6 +736,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             },
             style: widget.selectLocationButtonStyle,
             textColor: widget.selectLocationTextColor,
+            width: widget.selectLocationButtonWidth,
+            height: widget.selectLocationButtonHeight,
           ),
         ),
       ),
