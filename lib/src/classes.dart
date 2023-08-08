@@ -2,7 +2,7 @@ class OSMdata {
   final String displayname;
   final double latitude;
   final double longitude;
-  OSMdata(
+  const OSMdata(
       {required this.displayname,
       required this.latitude,
       required this.longitude});
@@ -26,7 +26,7 @@ class OSMdata {
 class LatLong {
   final double latitude;
   final double longitude;
-  LatLong(this.latitude, this.longitude);
+  const LatLong(this.latitude, this.longitude);
 }
 
 class PickedData {
@@ -34,5 +34,5 @@ class PickedData {
   final String address;
   final Map<String, dynamic> addressData;
 
-  PickedData(this.latLong, this.address, this.addressData);
+  const PickedData(this.latLong, this.address, this.addressData);
 }

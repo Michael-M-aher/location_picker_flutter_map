@@ -10,7 +10,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
 
 import 'Widgets/copyright_osm_widget.dart';
-import 'Widgets/wide_button.dart';
+import 'widgets/wide_button.dart';
 import 'classes.dart';
 
 /// Principal widget to show Flutter map using osm api with pick up location marker and search bar.
@@ -41,6 +41,10 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [selectLocationButtonText] : (String) set the text of the select location button (default = 'Set Current Location')
   ///
   final String selectLocationButtonText;
+
+  /// [selectLocationButtonLeadingIcon] : (Widget) set the leading icon of the select location button
+  ///
+  final Widget? selectLocationButtonLeadingIcon;
 
   /// [initZoom] : (double) set initialized zoom in specific location  (default = 17)
   ///
@@ -260,6 +264,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.contributorBadgeForOSMPositionRight = 0,
     this.contributorBadgeForOSMPositionBottom = -6,
     Widget? loadingWidget,
+    this.selectLocationButtonLeadingIcon,
   })  : loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
         super(key: key);
 
@@ -718,6 +723,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           padding: const EdgeInsets.all(8.0),
           child: WideButton(
             widget.selectLocationButtonText,
+            leadingIcon: widget.selectLocationButtonLeadingIcon,
             onPressed: () async {
               setState(() {
                 isLoading = true;
@@ -730,8 +736,6 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             },
             style: widget.selectLocationButtonStyle,
             textColor: widget.selectLocationTextColor,
-            width: widget.selectLocationButtonWidth,
-            height: widget.selectLocationButtonHeight,
           ),
         ),
       ),
@@ -740,30 +744,32 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Stack(
-        children: [
-          _buildMap(),
-          if (!isLoading) _buildMarker(),
-          if (isLoading) Center(child: widget.loadingWidget!),
-          _buildControllerButtons(),
-          if (widget.showSearchBar) _buildSearchBar(),
-          if (widget.showContributorBadgeForOSM) ...[
-            Positioned(
-              top: widget.contributorBadgeForOSMPositionTop,
-              bottom: widget.contributorBadgeForOSMPositionBottom,
-              left: widget.contributorBadgeForOSMPositionLeft,
-              right: widget.contributorBadgeForOSMPositionRight,
-              child: CopyrightOSMWidget(
-                badgeText: widget.contributorBadgeForOSMText,
-                badgeTextColor: widget.contributorBadgeForOSMTextColor,
-                badgeColor: widget.contributorBadgeForOSMColor,
+    return Stack(
+      children: [
+        _buildMap(),
+        if (!isLoading) _buildMarker(),
+        if (isLoading) Center(child: widget.loadingWidget!),
+        SafeArea(
+          child: Stack(children: [
+            _buildControllerButtons(),
+            if (widget.showSearchBar) _buildSearchBar(),
+            if (widget.showContributorBadgeForOSM) ...[
+              Positioned(
+                top: widget.contributorBadgeForOSMPositionTop,
+                bottom: widget.contributorBadgeForOSMPositionBottom,
+                left: widget.contributorBadgeForOSMPositionLeft,
+                right: widget.contributorBadgeForOSMPositionRight,
+                child: CopyrightOSMWidget(
+                  badgeText: widget.contributorBadgeForOSMText,
+                  badgeTextColor: widget.contributorBadgeForOSMTextColor,
+                  badgeColor: widget.contributorBadgeForOSMColor,
+                ),
               ),
-            ),
-          ],
-          if (widget.showSelectLocationButton) _buildSelectButton(),
-        ],
-      ),
+            ],
+            if (widget.showSelectLocationButton) _buildSelectButton(),
+          ]),
+        )
+      ],
     );
   }
 }

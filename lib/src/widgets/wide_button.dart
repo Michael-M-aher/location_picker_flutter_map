@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
 class WideButton extends StatelessWidget {
-  const WideButton(this.text,
-      {Key? key,
-      required,
-      this.padding = 0.0,
-      this.height,
-      this.width,
-      required this.onPressed,
-      this.style,
-      this.textColor})
-      : super(key: key);
+  const WideButton(
+    this.text, {
+    Key? key,
+    this.padding = 0.0,
+    this.height = 45,
+    this.width,
+    required this.onPressed,
+    this.style,
+    this.textColor,
+    this.leadingIcon,
+  }) : super(key: key);
 
   final String text;
   final double padding;
@@ -18,6 +19,7 @@ class WideButton extends StatelessWidget {
   final double? width;
   final ButtonStyle? style;
   final Color? textColor;
+  final Widget? leadingIcon;
   final void Function() onPressed;
 
   @override
@@ -33,9 +35,18 @@ class WideButton extends StatelessWidget {
         child: ElevatedButton(
           style: style,
           onPressed: onPressed,
-          child: Text(
-            text,
-            style: TextStyle(color: textColor),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (leadingIcon != null) ...[
+                leadingIcon!,
+                const SizedBox(width: 10),
+              ],
+              Text(
+                text,
+                style: TextStyle(color: textColor),
+              ),
+            ],
           ),
         ),
       ),

@@ -12,20 +12,25 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Location Picker',
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Flutter Location Picker'),
+        ),
         body: FlutterLocationPicker(
-            initZoom: 11,
-            minZoomLevel: 5,
-            maxZoomLevel: 16,
-            trackMyPosition: true,
-            searchBarBackgroundColor: Colors.white,
-            mapLanguage: 'ar',
-            onError: (e) => print(e),
-            onPicked: (pickedData) {
-              print(pickedData.latLong.latitude);
-              print(pickedData.latLong.longitude);
-              print(pickedData.address);
-              print(pickedData.addressData['country']);
-            }),
+          initZoom: 11,
+          minZoomLevel: 5,
+          maxZoomLevel: 16,
+          trackMyPosition: true,
+          searchBarBackgroundColor: Colors.white,
+          mapLanguage: 'pt',
+          onError: (e) => print(e),
+          selectLocationButtonLeadingIcon: const Icon(Icons.check),
+          onPicked: (pickedData) {
+            print(pickedData.latLong.latitude);
+            print(pickedData.latLong.longitude);
+            print(pickedData.address);
+            print(pickedData.addressData['country']);
+          },
+        ),
       ),
     );
   }
