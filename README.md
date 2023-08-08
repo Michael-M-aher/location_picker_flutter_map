@@ -140,7 +140,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^1.2.1
+      location_picker_flutter_map: ^1.2.2
 
 ## Simple Usage
 
@@ -187,7 +187,9 @@ For example
             selectLocationButtonStyle: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.blue),
             ),
+            selectedLocationButtonTextstyle: const TextStyle(fontSize: 18),
             selectLocationButtonText: 'Set Current Location',
+            selectLocationButtonLeadingIcon: const Icon(Icons.check),
             initZoom: 11,
             minZoomLevel: 5,
             maxZoomLevel: 16,

@@ -21,14 +21,15 @@ class MyApp extends StatelessWidget {
           maxZoomLevel: 16,
           trackMyPosition: true,
           searchBarBackgroundColor: Colors.white,
-          mapLanguage: 'pt',
+          selectedLocationButtonTextstyle: const TextStyle(fontSize: 18),
+          mapLanguage: 'en',
           onError: (e) => print(e),
           selectLocationButtonLeadingIcon: const Icon(Icons.check),
           onPicked: (pickedData) {
             print(pickedData.latLong.latitude);
             print(pickedData.latLong.longitude);
             print(pickedData.address);
-            print(pickedData.addressData['country']);
+            print(pickedData.addressData);
           },
         ),
       ),

@@ -9,7 +9,7 @@ class WideButton extends StatelessWidget {
     this.width,
     required this.onPressed,
     this.style,
-    this.textColor,
+    this.textStyle = const TextStyle(fontSize: 20),
     this.leadingIcon,
   }) : super(key: key);
 
@@ -18,7 +18,7 @@ class WideButton extends StatelessWidget {
   final double? height;
   final double? width;
   final ButtonStyle? style;
-  final Color? textColor;
+  final TextStyle textStyle;
   final Widget? leadingIcon;
   final void Function() onPressed;
 
@@ -44,7 +44,7 @@ class WideButton extends StatelessWidget {
               ],
               Text(
                 text,
-                style: TextStyle(color: textColor),
+                style: textStyle,
               ),
             ],
           ),
