@@ -144,7 +144,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      flutter_location_search: ^1.1.3
+      flutter_location_search: ^1.1.4
 
 ## Getting Started
 

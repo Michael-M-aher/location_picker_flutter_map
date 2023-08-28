@@ -1,3 +1,9 @@
+## 1.1.4
+
+* Fix API call method
+* Upgrade gelocator version from 9.0.2 to 10.0.0
+* Upgrade logger version from 1.1.0 to 2.0.1
+
 ## 1.1.3
 
 * Upgrade intl version from 0.17.0 to 0.18.0
