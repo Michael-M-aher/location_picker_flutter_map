@@ -162,6 +162,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final BorderRadiusGeometry? searchbarBorderRadius;
 
+  /// [searchbarDebounceDuration] : (Duration) change the duration of search debounce
+  ///
+  final Duration? searchbarDebounceDuration;
+
   /// [zoomButtonsColor] : (Color) change the color of the zoom buttons icons
   ///
   final Color? zoomButtonsColor;
@@ -253,6 +257,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.searchbarInputBorder,
     this.searchbarInputFocusBorderp,
     this.searchbarBorderRadius,
+    this.searchbarDebounceDuration,
     this.mapLoadingBackgroundColor,
     this.locationButtonBackgroundColor,
     this.zoomButtonsBackgroundColor,
@@ -580,7 +585,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                     _debounce?.cancel();
                   }
                   setState(() {});
-                  _debounce = Timer(const Duration(milliseconds: 20), () async {
+                  _debounce = Timer(
+                      widget.searchbarDebounceDuration ??
+                          const Duration(milliseconds: 500), () async {
                     var client = http.Client();
                     try {
                       String url =
