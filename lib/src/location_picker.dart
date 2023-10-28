@@ -487,7 +487,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     /// triggered, it calls the setNameCurrentPos function.
     _mapController.mapEventStream.listen((event) async {
       if (event is MapEventMoveEnd) {
-        setNameCurrentPos(event.center.latitude, event.center.longitude);
+        setNameCurrentPos(
+            event.camera.center.latitude, event.camera.center.longitude);
       }
     });
 
