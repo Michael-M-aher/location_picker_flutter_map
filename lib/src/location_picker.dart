@@ -30,7 +30,7 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final LatLong? initPosition;
 
-  /// [urlTemplate] : (String) set the url template of the tile layer to get the data from the api (makes you apply your own style to the map) (default = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+  /// [urlTemplate] : (String) set the url template of the tile layer to get the data from the api (makes you apply your own style to the map) (default = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png')
   ///
   final String urlTemplate;
 
@@ -162,6 +162,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final BorderRadiusGeometry? searchbarBorderRadius;
 
+  /// [searchbarDebounceDuration] : (Duration) change the duration of search debounce
+  ///
+  final Duration? searchbarDebounceDuration;
+
   /// [zoomButtonsColor] : (Color) change the color of the zoom buttons icons
   ///
   final Color? zoomButtonsColor;
@@ -229,7 +233,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.minZoomLevel = 2,
     this.maxZoomLevel = 18.4,
     this.maxBounds,
-    this.urlTemplate = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    this.urlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     this.mapLanguage = 'en',
     this.selectLocationButtonText = 'Set Current Location',
     this.mapAnimationDuration = const Duration(milliseconds: 2000),
@@ -253,6 +257,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.searchbarInputBorder,
     this.searchbarInputFocusBorderp,
     this.searchbarBorderRadius,
+    this.searchbarDebounceDuration,
     this.mapLoadingBackgroundColor,
     this.locationButtonBackgroundColor,
     this.zoomButtonsBackgroundColor,
@@ -287,7 +292,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   List<OSMdata> _options = <OSMdata>[];
-  LatLng? initPosition;
+  LatLng initPosition = const LatLng(50.5, 30.51);
   Timer? _debounce;
   bool isLoading = true;
   late void Function(Exception e) onError;
@@ -360,10 +365,13 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     // Create some tweens. These serve to split up the transition from one location to another.
     // In our case, we want to split the transition be<tween> our current map center and the destination.
     final latTween = Tween<double>(
-        begin: _mapController.center.latitude, end: destLocation.latitude);
+        begin: _mapController.camera.center.latitude,
+        end: destLocation.latitude);
     final lngTween = Tween<double>(
-        begin: _mapController.center.longitude, end: destLocation.longitude);
-    final zoomTween = Tween<double>(begin: _mapController.zoom, end: destZoom);
+        begin: _mapController.camera.center.longitude,
+        end: destLocation.longitude);
+    final zoomTween =
+        Tween<double>(begin: _mapController.camera.zoom, end: destZoom);
     // Create a animation controller that has a duration and a TickerProvider.
     if (mounted) {
       _animationController = AnimationController(
@@ -414,11 +422,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   /// Returns:
   ///   A Future object that will eventually contain a PickedData object.
   Future<PickedData> pickData() async {
-    LatLong center = LatLong(
-        _mapController.center.latitude, _mapController.center.longitude);
+    LatLong center = LatLong(_mapController.camera.center.latitude,
+        _mapController.camera.center.longitude);
     var client = http.Client();
     String url =
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${_mapController.center.latitude}&lon=${_mapController.center.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${_mapController.camera.center.latitude}&lon=${_mapController.camera.center.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
     var response = await client.get(Uri.parse(url));
     var decodedResponse =
         jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
@@ -482,7 +490,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     /// triggered, it calls the setNameCurrentPos function.
     _mapController.mapEventStream.listen((event) async {
       if (event is MapEventMoveEnd) {
-        setNameCurrentPos(event.center.latitude, event.center.longitude);
+        setNameCurrentPos(
+            event.camera.center.latitude, event.camera.center.longitude);
       }
     });
 
@@ -580,7 +589,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                     _debounce?.cancel();
                   }
                   setState(() {});
-                  _debounce = Timer(const Duration(milliseconds: 20), () async {
+                  _debounce = Timer(
+                      widget.searchbarDebounceDuration ??
+                          const Duration(milliseconds: 500), () async {
                     var client = http.Client();
                     try {
                       String url =
@@ -624,8 +635,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               shape: const CircleBorder(),
               backgroundColor: widget.zoomButtonsBackgroundColor,
               onPressed: () {
-                _animatedMapMove(_mapController.center,
-                    _mapController.zoom + widget.stepZoom);
+                _animatedMapMove(_mapController.camera.center,
+                    _mapController.camera.zoom + widget.stepZoom);
               },
               child: Icon(
                 Icons.zoom_in,
@@ -639,8 +650,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               shape: const CircleBorder(),
               backgroundColor: widget.zoomButtonsBackgroundColor,
               onPressed: () {
-                _animatedMapMove(_mapController.center,
-                    _mapController.zoom - widget.stepZoom);
+                _animatedMapMove(_mapController.camera.center,
+                    _mapController.camera.zoom - widget.stepZoom);
               },
               child: Icon(
                 Icons.zoom_out,
@@ -677,19 +688,21 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     return Positioned.fill(
         child: FlutterMap(
       options: MapOptions(
-        center: initPosition,
-        zoom: initPosition != null ? widget.initZoom : widget.minZoomLevel,
+        initialCenter: initPosition,
+        initialZoom: widget.initZoom,
         maxZoom: widget.maxZoomLevel,
         minZoom: widget.minZoomLevel,
-        maxBounds: widget.maxBounds,
+        cameraConstraint: (widget.maxBounds != null
+            ? CameraConstraint.contain(bounds: widget.maxBounds!)
+            : const CameraConstraint.unconstrained()),
+        backgroundColor:
+            widget.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
       ),
       mapController: _mapController,
       children: [
         TileLayer(
           urlTemplate: widget.urlTemplate,
           subdomains: const ['a', 'b', 'c'],
-          backgroundColor:
-              widget.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
         ),
         if (widget.showCurrentLocationPointer) _buildCurrentLocation(),
       ],
