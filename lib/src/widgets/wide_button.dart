@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class WideButton extends StatelessWidget {
   const WideButton(
     this.text, {
-    Key? key,
+    super.key,
     this.padding = 0.0,
     this.height = 45,
     this.width,
@@ -11,7 +11,7 @@ class WideButton extends StatelessWidget {
     this.style,
     this.textStyle = const TextStyle(fontSize: 20),
     this.leadingIcon,
-  }) : super(key: key);
+  });
 
   final String text;
   final double padding;

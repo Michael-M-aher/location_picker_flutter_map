@@ -1,3 +1,5 @@
+import 'package:latlong2/latlong.dart';
+
 class OSMdata {
   final String displayname;
   final double latitude;
@@ -27,6 +29,9 @@ class LatLong {
   final double latitude;
   final double longitude;
   const LatLong(this.latitude, this.longitude);
+  LatLng toLatLng() {
+    return LatLng(latitude, longitude);
+  }
 }
 
 class PickedData {

@@ -1,3 +1,11 @@
+## 2.0.0
+
+* Add `onchanged` function that returns `pickedData` when the user change marker location on map.
+* Add `searchbarDebounceDuration` property.
+* Upgrade flutter_map to 6.0.1.
+* Remove subdomains from the default OSM URLs.
+* Update other dependencies.
+
 ## 1.2.2
 
 * SetLocationError handling

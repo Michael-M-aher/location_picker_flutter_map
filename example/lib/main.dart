@@ -31,6 +31,13 @@ class MyApp extends StatelessWidget {
             print(pickedData.address);
             print(pickedData.addressData);
           },
+          onChanged: (pickedData) {
+            print(pickedData.latLong.latitude);
+            print(pickedData.latLong.longitude);
+            print(pickedData.address);
+            print(pickedData.addressData);
+          },
+          showContributorBadgeForOSM: true,
         ),
       ),
     );
