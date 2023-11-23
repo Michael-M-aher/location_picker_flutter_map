@@ -1,3 +1,9 @@
+## 2.1.0
+
+* Improve performance.
+* Reduce tile loading durations (particularly on the web).
+* Reduce users' (cellular) data and cache space consumption.
+
 ## 2.0.0
 
 * Add `onchanged` function that returns `pickedData` when the user change marker location on map.

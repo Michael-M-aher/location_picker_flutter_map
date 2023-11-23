@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -725,12 +726,14 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               : const CameraConstraint.unconstrained()),
           backgroundColor:
               widget.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
+          keepAlive: true,
         ),
         mapController: _mapController,
         children: [
           TileLayer(
             urlTemplate: widget.urlTemplate,
             subdomains: const ['a', 'b', 'c'],
+            tileProvider: CancellableNetworkTileProvider(),
           ),
           if (widget.showCurrentLocationPointer) _buildCurrentLocation(),
         ],

@@ -140,7 +140,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^2.0.0
+      location_picker_flutter_map: ^2.1.0
 
 ## Simple Usage
 
