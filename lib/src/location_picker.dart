@@ -9,7 +9,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
-
 import 'widgets/copyright_osm_widget.dart';
 import 'widgets/wide_button.dart';
 import 'classes.dart';
@@ -42,6 +41,10 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [mapLanguage] : (String) set the language of the map and address text (default = 'en')
   ///
   final String mapLanguage;
+
+  /// [countryFilter] : (String) set the list of country codes to filter search results to them (example: 'eg,us') (default = null)
+  ///
+  final String? countryFilter;
 
   /// [selectLocationButtonText] : (String) set the text of the select location button (default = 'Set Current Location')
   ///
@@ -241,6 +244,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.maxBounds,
     this.urlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     this.mapLanguage = 'en',
+    this.countryFilter,
     this.selectLocationButtonText = 'Set Current Location',
     this.mapAnimationDuration = const Duration(milliseconds: 2000),
     this.trackMyPosition = false,
@@ -410,7 +414,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     setNameCurrentPos(latLng);
     pickData(latLng).then(
       (value) {
-        widget.onChanged!(value);
+        if (widget.onChanged != null) widget.onChanged!(value);
       },
     );
   }
@@ -620,7 +624,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                     var client = http.Client();
                     try {
                       String url =
-                          'https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}';
+                          'https://nominatim.openstreetmap.org/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryFilter != null ? '&countrycodes=${widget.countryFilter}' : ''}';
                       var response = await client.get(Uri.parse(url));
                       var decodedResponse =
                           jsonDecode(utf8.decode(response.bodyBytes))

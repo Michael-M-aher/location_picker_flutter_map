@@ -1,3 +1,9 @@
+## 3.0.0
+
+* Fix `Buffer parameter must not be null` issue.
+* Fix `onChanged` null value issue.
+* Add `countryFilter` that allows filtering search results to specific countries
+
 ## 2.1.0
 
 * Improve performance.
