@@ -233,7 +233,7 @@ class FlutterLocationPicker extends StatefulWidget {
   const FlutterLocationPicker({
     super.key,
     required this.onPicked,
-    this.onChanged,
+    required this.onChanged,
     this.selectedLocationButtonTextstyle = const TextStyle(fontSize: 20),
     this.onError,
     this.initPosition,
