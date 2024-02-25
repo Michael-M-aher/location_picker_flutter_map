@@ -1,3 +1,8 @@
+## 3.0.1
+
+* Fix error of Geolocator.getServiceStatusStream() on web
+* Update dependencies
+
 ## 3.0.0
 
 * Fix `Buffer parameter must not be null` issue.
