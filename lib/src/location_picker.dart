@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -41,6 +42,18 @@ class FlutterLocationPicker extends StatefulWidget {
   /// [mapLanguage] : (String) set the language of the map and address text (default = 'en')
   ///
   final String mapLanguage;
+
+  /// [nominatimHost] : (String) nominatim instance to use (default = 'nominatim.openstreetmap.org')
+  ///
+  final String nominatimHost;
+
+  /// [nominatimAdditionalQueryParameters] : (Map<String,dynamic>) additional parameters to add to the nominatim query. Can also be used to override existing parameters (example: {'extratags': '1'}) (default = null)
+  ///
+  final Map<String,dynamic>? nominatimAdditionalQueryParameters;
+
+  /// [nominatimZoomLevel] : (int?) zoom level to use in nominatim requests. If set to null will use zoom level corresponding to current map zoom level (example: 18) (default = null)
+  ///
+  final int? nominatimZoomLevel;
 
   /// [countryFilter] : (String) set the list of country codes to filter search results to them (example: 'eg,us') (default = null)
   ///
@@ -244,6 +257,9 @@ class FlutterLocationPicker extends StatefulWidget {
     this.maxBounds,
     this.urlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     this.mapLanguage = 'en',
+    this.nominatimHost = 'nominatim.openstreetmap.org',
+    this.nominatimZoomLevel,
+    this.nominatimAdditionalQueryParameters,
     this.countryFilter,
     this.selectLocationButtonText = 'Set Current Location',
     this.mapAnimationDuration = const Duration(milliseconds: 2000),
@@ -411,35 +427,15 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   ///   longitude (double): The longitude parameter represents the current longitude coordinate of the
   /// location.
   void onLocationChanged(LatLong latLng) {
-    setNameCurrentPos(latLng);
     pickData(latLng).then(
-      (value) {
-        if (widget.onChanged != null) widget.onChanged!(value);
+      (PickedData pickedData) {
+        if (widget.onChanged != null) widget.onChanged!(pickedData);
+        // These two lines, and the onError callback below are the replacement =
+        // for the entire setNameCurrentPos function.
+        _searchController.text = pickedData.address;
+        setState(() {});
       },
-    );
-  }
-
-  /// It takes the latitude and longitude of the current location and uses the OpenStreetMap API to get
-  /// the address of the location
-  ///
-  /// Args:
-  ///   latitude (double): The latitude of the location.
-  ///   longitude (double): The longitude of the location.
-  void setNameCurrentPos(LatLong latLng) async {
-    var client = http.Client();
-    String url =
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${latLng.latitude}&lon=${latLng.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
-
-    try {
-      var response = await client.get(Uri.parse(url));
-      var decodedResponse =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
-      _searchController.text =
-          decodedResponse['display_name'] ?? "This Location is not accessible";
-      setState(() {});
-    } on Exception catch (e) {
-      onError(e);
-    }
+    ).onError<Exception>((error, stackTrace) {onError(error);});
   }
 
   /// It takes the poiner of the map and sends a request to the OpenStreetMap API to get the address of
@@ -449,22 +445,42 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   ///   A Future object that will eventually contain a PickedData object.
   Future<PickedData> pickData(LatLong center) async {
     var client = http.Client();
-    String url =
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.latitude}&lon=${center.longitude}&zoom=18&addressdetails=1&accept-language=${widget.mapLanguage}';
-    var response = await client.get(Uri.parse(url));
+    // If zoom level is not explicitly set, use zoom level corresponding to current camera zoom, when possible
+    int roundedZoom = widget.nominatimZoomLevel
+        ?? ((isLoading || _animationController.isAnimating)
+            ? 18
+            : min(_mapController.camera.zoom.round(), 18));
+    // String url =
+    //     'https://${widget.nominatimHost}/reverse?format=json&lat=${center.latitude}&lon=${center.longitude}&zoom=$roundedZoom&addressdetails=1&accept-language=${widget.mapLanguage}';
+    // var uri = Uri.parse(url);
+    Map<String, dynamic> queryParameters = {
+      'format': 'json',
+      'lat': center.latitude.toString(),
+      'lon': center.longitude.toString(),
+      'zoom': roundedZoom.toString(),
+      'addressdetails': '1',
+      'accept-language': widget.mapLanguage,
+    };
+    queryParameters.addAll(widget.nominatimAdditionalQueryParameters ?? {});
+    var uri = Uri.https(widget.nominatimHost, '/reverse', queryParameters);
+    var response = await client.get(uri);
     var decodedResponse =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
+        jsonDecode(utf8.decode(response.bodyBytes));
     String displayName = "This Location is not accessible";
     Map<String, dynamic> address;
 
-    if (decodedResponse['display_name'] != null) {
-      displayName = decodedResponse['display_name'];
-      address = decodedResponse['address'];
+    if (decodedResponse is Map<String, dynamic>) {
+      if (decodedResponse['display_name'] != null) {
+        displayName = decodedResponse['display_name'];
+        address = decodedResponse['address'];
+      } else {
+        center = const LatLong(0, 0);
+        address = decodedResponse;
+      }
+      return PickedData(center, displayName, address, decodedResponse);
     } else {
-      center = const LatLong(0, 0);
-      address = decodedResponse as Map<String, dynamic>;
+      return PickedData(const LatLong(0,0), displayName, {}, decodedResponse);
     }
-    return PickedData(center, displayName, address);
   }
 
   @override
