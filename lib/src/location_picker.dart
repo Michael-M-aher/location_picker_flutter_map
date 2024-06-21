@@ -4,14 +4,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
-import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart' as marker;
+import 'package:geolocator/geolocator.dart' as geo;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
+import 'classes.dart';
 import 'widgets/copyright_osm_widget.dart';
 import 'widgets/wide_button.dart';
-import 'classes.dart';
 
 /// Principal widget to show Flutter map using osm api with pick up location marker and search bar.
 /// you can track you current location, search for a location and select it.
@@ -118,9 +118,9 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final double? selectLocationButtonHeight;
 
-  /// [selectedLocationButtonTextstyle] : set the style of the button text (default = TextStyle(fontSize: 20))
+  /// [selectedLocationButtonTextStyle] : set the style of the button text (default = TextStyle(fontSize: 20))
   ///
-  final TextStyle selectedLocationButtonTextstyle;
+  final TextStyle selectedLocationButtonTextStyle;
 
   /// [selectLocationButtonPositionTop] : (double) change the top position of the select Location button (default = null)
   ///
@@ -234,7 +234,7 @@ class FlutterLocationPicker extends StatefulWidget {
     super.key,
     required this.onPicked,
     this.onChanged,
-    this.selectedLocationButtonTextstyle = const TextStyle(fontSize: 20),
+    this.selectedLocationButtonTextStyle = const TextStyle(fontSize: 20),
     this.onError,
     this.initPosition,
     this.stepZoom = 1,
@@ -322,16 +322,17 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   ///
   /// Returns:
   ///   A Future<Position> object.
-  Future<Position> _determinePosition() async {
+  Future<geo.Position> _determinePosition() async {
     bool serviceEnabled;
-    LocationPermission permission;
+    geo.LocationPermission permission;
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      const error = PermissionDeniedException("Location Permission is denied");
+    permission = await geo.Geolocator.checkPermission();
+   
+    if (permission == geo.LocationPermission.denied) {
+      const error = geo.PermissionDeniedException("Location Permission is denied");
       onError(error);
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+      if (permission == geo.LocationPermission.denied) {
         // Permissions are denied, next time you could try
         // requesting permissions again (this is also where
         // Android's shouldShowRequestPermissionRationale
@@ -341,27 +342,27 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       }
     }
 
-    if (permission == LocationPermission.deniedForever) {
+    if (permission == geo.LocationPermission.deniedForever) {
       const error =
-          PermissionDeniedException("Location Permission is denied forever");
+          geo.PermissionDeniedException("Location Permission is denied forever");
       onError(error);
       // Permissions are denied forever, handle appropriately.
       return Future.error(error);
     }
 
     // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      await Geolocator.openLocationSettings();
+      await geo.Geolocator.openLocationSettings();
 
       // Location services are not enabled don't continue
       // accessing the position and request users of the
       // App to enable the location services.
-      while (!await Geolocator.isLocationServiceEnabled()) {}
+      while (!await geo.Geolocator.isLocationServiceEnabled()) {}
     }
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+    return await geo.Geolocator.getCurrentPosition();
   }
 
   /// Create a animation controller, add a listener to the controller, and
@@ -442,8 +443,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     }
   }
 
-  /// It takes the poiner of the map and sends a request to the OpenStreetMap API to get the address of
-  /// the poiner
+  /// It takes the pointer of the map and sends a request to the OpenStreetMap API to get the address of
+  /// the pointer
   ///
   /// Returns:
   ///   A Future object that will eventually contain a PickedData object.
@@ -578,7 +579,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         margin: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: widget.searchBarBackgroundColor ??
-              Theme.of(context).colorScheme.background,
+              Theme.of(context).colorScheme.surface,
           borderRadius:
               widget.searchbarBorderRadius ?? BorderRadius.circular(5),
         ),
@@ -746,9 +747,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   }
 
   Widget _buildCurrentLocation() {
-    return CurrentLocationLayer(
-      style: const LocationMarkerStyle(
-        markerDirection: MarkerDirection.heading,
+    return marker.CurrentLocationLayer(
+      style: const marker.LocationMarkerStyle(
+        markerDirection: marker.MarkerDirection.heading,
         headingSectorRadius: 60,
         markerSize: Size(18, 18),
       ),
@@ -800,7 +801,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               );
             },
             style: widget.selectLocationButtonStyle,
-            textStyle: widget.selectedLocationButtonTextstyle,
+            textStyle: widget.selectedLocationButtonTextStyle,
             width: widget.selectLocationButtonWidth,
             height: widget.selectLocationButtonHeight,
           ),

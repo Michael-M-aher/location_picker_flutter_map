@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:location_picker_flutter_map/location_picker_flutter_map.dart';
 
@@ -21,7 +23,7 @@ class MyApp extends StatelessWidget {
           maxZoomLevel: 16,
           trackMyPosition: true,
           searchBarBackgroundColor: Colors.white,
-          selectedLocationButtonTextstyle: const TextStyle(fontSize: 18),
+          selectedLocationButtonTextStyle: const TextStyle(fontSize: 18),
           mapLanguage: 'en',
           onError: (e) => print(e),
           selectLocationButtonLeadingIcon: const Icon(Icons.check),
