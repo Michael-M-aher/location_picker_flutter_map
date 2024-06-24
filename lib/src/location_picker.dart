@@ -304,6 +304,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   LatLong initPosition = const LatLong(30.0443879, 31.2357257);
   Timer? _debounce;
   bool isLoading = true;
+  bool loadingCurrentLocation = false;
   late void Function(Exception e) onError;
 
   /// It returns true if the text is RTL, false if it's LTR
@@ -361,7 +362,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     }
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition(timeLimit: const Duration(seconds: 10));
   }
 
   /// Create a animation controller, add a listener to the controller, and
@@ -696,21 +697,30 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             FloatingActionButton(
               heroTag: "btn3",
               backgroundColor: widget.locationButtonBackgroundColor,
-              onPressed: () async {
-                // setState(() {
-                //   isLoading = true;
-                // });
+              onPressed: !loadingCurrentLocation ? () {
+                setState(() {
+                  loadingCurrentLocation = true;
+                });
                 _determinePosition().then(
                   (currentPosition) {
                     LatLong center = LatLong(
                         currentPosition.latitude, currentPosition.longitude);
                     _animatedMapMove(center.toLatLng(), 18);
                     onLocationChanged(center);
+                    setState(() {
+                      loadingCurrentLocation = false;
+                    });
                   },
-                );
-              },
+                ).onError((error, stackTrace) {
+                  print(error);
+                  print(stackTrace);
+                  setState(() {
+                    loadingCurrentLocation = false;
+                  });
+                },);
+              } : null,
               child:
-                  Icon(Icons.my_location, color: widget.locationButtonsColor),
+                !loadingCurrentLocation ? Icon(Icons.my_location, color: widget.locationButtonsColor) : const CircularProgressIndicator(),
             ),
         ],
       ),
