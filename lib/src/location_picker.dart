@@ -719,8 +719,15 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                   });
                 },);
               } : null,
-              child:
-                !loadingCurrentLocation ? Icon(Icons.my_location, color: widget.locationButtonsColor) : CircularProgressIndicator(color: widget.locationButtonsColor,),
+              child: !loadingCurrentLocation
+                  ? Icon(Icons.my_location, color: widget.locationButtonsColor)
+                  : CircularProgressIndicator(
+                      color: widget.locationButtonsColor ??
+                          Theme.of(context)
+                              .floatingActionButtonTheme
+                              .foregroundColor ??
+                          Theme.of(context).colorScheme.onSecondary,
+                    ),
             ),
         ],
       ),
