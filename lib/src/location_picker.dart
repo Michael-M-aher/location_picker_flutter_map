@@ -720,7 +720,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 },);
               } : null,
               child:
-                !loadingCurrentLocation ? Icon(Icons.my_location, color: widget.locationButtonsColor) : const CircularProgressIndicator(),
+                !loadingCurrentLocation ? Icon(Icons.my_location, color: widget.locationButtonsColor) : CircularProgressIndicator(color: widget.locationButtonsColor,),
             ),
         ],
       ),
