@@ -486,6 +486,10 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     /// it will set the initLate and initLong to the [initPosition].latitude and
     /// [initPosition].longitude.
     if (widget.trackMyPosition) {
+      if (widget.initPosition != null) {
+        initPosition = LatLong(
+            widget.initPosition!.latitude, widget.initPosition!.longitude);
+      }
       _determinePosition().then((currentPosition) {
         initPosition =
             LatLong(currentPosition.latitude, currentPosition.longitude);
