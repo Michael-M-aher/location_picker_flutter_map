@@ -5,11 +5,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
-import 'package:flutter_map_location_marker/flutter_map_location_marker.dart' as marker;
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart'
+    as marker;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
+
 import 'classes.dart';
 import 'widgets/copyright_osm_widget.dart';
 import 'widgets/wide_button.dart';
@@ -49,7 +51,7 @@ class FlutterLocationPicker extends StatefulWidget {
 
   /// [nominatimAdditionalQueryParameters] : (Map<String,dynamic>) additional parameters to add to the nominatim query. Can also be used to override existing parameters (example: {'extratags': '1'}) (default = null)
   ///
-  final Map<String,dynamic>? nominatimAdditionalQueryParameters;
+  final Map<String, dynamic>? nominatimAdditionalQueryParameters;
 
   /// [nominatimZoomLevel] : (int?) zoom level to use in nominatim requests. If set to null will use zoom level corresponding to current map zoom level (example: 18) (default = null)
   ///
@@ -333,19 +335,12 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     return intl.Bidi.detectRtlDirectionality(text);
   }
 
-  /// If location services are enabled, check if we have permissions to access the location. If we don't
-  /// have permissions, request them. If we have permissions, return the current position
-  ///
-  /// Returns:
-  ///   A Future<Position> object.
-  Future<geo.Position> _determinePosition() async {
-    bool serviceEnabled;
-    geo.LocationPermission permission;
+  void checkLocationPermission() async {
+    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
 
-    permission = await geo.Geolocator.checkPermission();
-   
     if (permission == geo.LocationPermission.denied) {
-      const error = geo.PermissionDeniedException("Location Permission is denied");
+      const error =
+          geo.PermissionDeniedException("Location Permission is denied");
       onError(error);
       permission = await geo.Geolocator.requestPermission();
       if (permission == geo.LocationPermission.denied) {
@@ -359,12 +354,21 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     }
 
     if (permission == geo.LocationPermission.deniedForever) {
-      const error =
-          geo.PermissionDeniedException("Location Permission is denied forever");
+      const error = geo.PermissionDeniedException(
+          "Location Permission is denied forever");
       onError(error);
       // Permissions are denied forever, handle appropriately.
       return Future.error(error);
     }
+  }
+
+  /// If location services are enabled, check if we have permissions to access the location. If we don't
+  /// have permissions, request them. If we have permissions, return the current position
+  ///
+  /// Returns:
+  ///   A Future<Position> object.
+  Future<geo.Position> _determinePosition() async {
+    bool serviceEnabled;
 
     // Test if location services are enabled.
     serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
@@ -374,7 +378,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       // Location services are not enabled don't continue
       // accessing the position and request users of the
       // App to enable the location services.
-      while (!await geo.Geolocator.isLocationServiceEnabled()) {}
+      // while (!await geo.Geolocator.isLocationServiceEnabled()) {}
     }
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
@@ -436,7 +440,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         _searchController.text = pickedData.address;
         setState(() {});
       },
-    ).onError<Exception>((error, stackTrace) {onError(error);});
+    ).onError<Exception>((error, stackTrace) {
+      onError(error);
+    });
   }
 
   /// It takes the pointer of the map and sends a request to the OpenStreetMap API to get the address of
@@ -447,8 +453,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   Future<PickedData> pickData(LatLong center) async {
     var client = http.Client();
     // If zoom level is not explicitly set, use zoom level corresponding to current camera zoom, when possible
-    int roundedZoom = widget.nominatimZoomLevel
-        ?? ((isLoading || _animationController.isAnimating)
+    int roundedZoom = widget.nominatimZoomLevel ??
+        ((isLoading || _animationController.isAnimating)
             ? 18
             : min(_mapController.camera.zoom.round(), 18));
     // String url =
@@ -465,8 +471,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     queryParameters.addAll(widget.nominatimAdditionalQueryParameters ?? {});
     var uri = Uri.https(widget.nominatimHost, '/reverse', queryParameters);
     var response = await client.get(uri);
-    var decodedResponse =
-        jsonDecode(utf8.decode(response.bodyBytes));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
     String displayName = "This Location is not accessible";
     Map<String, dynamic> address;
 
@@ -480,7 +485,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       }
       return PickedData(center, displayName, address, decodedResponse);
     } else {
-      return PickedData(const LatLong(0,0), displayName, {}, decodedResponse);
+      return PickedData(const LatLong(0, 0), displayName, {}, decodedResponse);
     }
   }
 
@@ -493,6 +498,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   @override
   void initState() {
+    checkLocationPermission();
     _mapController = MapController();
     _animationController =
         AnimationController(duration: widget.mapAnimationDuration, vsync: this);
