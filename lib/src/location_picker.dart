@@ -495,7 +495,6 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   @override
   void initState() {
-    checkLocationPermission();
     _mapController = MapController();
     _animationController =
         AnimationController(duration: widget.mapAnimationDuration, vsync: this);
@@ -524,7 +523,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         onLocationChanged(latLng: initPosition);
         _animatedMapMove(initPosition.toLatLng(), 18.0);
         setState(
-              () {
+          () {
             isLoading = false;
           },
         );
@@ -738,7 +737,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                     _animatedMapMove(center.toLatLng(), 18);
                     onLocationChanged(latLng: center);
                     setState(
-                          () {
+                      () {
                         isLoading = false;
                       },
                     );
@@ -758,7 +757,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     return Positioned.fill(
       child: FlutterMap(
         options: MapOptions(
-          initialCenter: initPosition.toLatLng(),
+          initialCenter:
+              widget.initPosition?.toLatLng() ?? initPosition.toLatLng(),
           initialZoom: widget.initZoom,
           maxZoom: widget.maxZoomLevel,
           minZoom: widget.minZoomLevel,
