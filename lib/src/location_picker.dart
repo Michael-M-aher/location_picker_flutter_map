@@ -7,10 +7,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart'
     as marker;
-import 'package:geolocator/geolocator.dart' as geo;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
+import 'package:location/location.dart';
 
 import 'classes.dart';
 import 'widgets/copyright_osm_widget.dart';
@@ -245,6 +245,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final double? contributorBadgeForOSMPositionBottom;
 
+  /// [mapLayers] : (List<Widget>) add custom layers to the map (default [])
+  ///  example: [PolylineLayerWidget(polyline: Polyline(points: points, color: Colors.red))]
+  final List<Widget> mapLayers;
+
   const FlutterLocationPicker({
     super.key,
     required this.onPicked,
@@ -301,6 +305,7 @@ class FlutterLocationPicker extends StatefulWidget {
     this.contributorBadgeForOSMPositionLeft,
     this.contributorBadgeForOSMPositionRight = 0,
     this.contributorBadgeForOSMPositionBottom = -6,
+    this.mapLayers = const [],
     Widget? loadingWidget,
     this.selectLocationButtonLeadingIcon,
   }) : loadingWidget = loadingWidget ?? const CircularProgressIndicator();
@@ -317,6 +322,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   // Create a animation controller that has a duration and a TickerProvider.
   late AnimationController _animationController;
   final TextEditingController _searchController = TextEditingController();
+  final Location location = Location();
   final FocusNode _focusNode = FocusNode();
   List<OSMdata> _options = <OSMdata>[];
   LatLong initPosition = const LatLong(30.0443879, 31.2357257);
@@ -335,30 +341,26 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     return intl.Bidi.detectRtlDirectionality(text);
   }
 
-  void checkLocationPermission() async {
-    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
-
-    if (permission == geo.LocationPermission.denied) {
-      const error =
-          geo.PermissionDeniedException("Location Permission is denied");
-      onError(error);
-      permission = await geo.Geolocator.requestPermission();
-      if (permission == geo.LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error(error);
+  Future<void> checkLocationPermission() async {
+    bool serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        const error = 'Location services are disabled.';
+        throw Exception(error);
       }
     }
 
-    if (permission == geo.LocationPermission.deniedForever) {
-      const error = geo.PermissionDeniedException(
-          "Location Permission is denied forever");
-      onError(error);
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(error);
+    PermissionStatus permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        const error = 'Location permission denied';
+        onError(Exception(error));
+      }
+    } else if (permissionGranted == PermissionStatus.deniedForever) {
+      const error = 'Location permission denied forever';
+      throw Exception(error);
     }
   }
 
@@ -367,22 +369,16 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   ///
   /// Returns:
   ///   A Future<Position> object.
-  Future<geo.Position> _determinePosition() async {
-    bool serviceEnabled;
-
-    // Test if location services are enabled.
-    serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      await geo.Geolocator.openLocationSettings();
-
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      // while (!await geo.Geolocator.isLocationServiceEnabled()) {}
+  Future<LocationData> _determinePosition() async {
+    try {
+      // Test if location services are enabled.
+      await checkLocationPermission();
+      return await location.getLocation();
+    } catch (e) {
+      rethrow;
     }
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await geo.Geolocator.getCurrentPosition();
   }
 
   /// Create a animation controller, add a listener to the controller, and
@@ -431,13 +427,14 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   /// location. It is a double value that specifies the north-south position on the Earth's surface.
   ///   longitude (double): The longitude parameter represents the current longitude coordinate of the
   /// location.
-  void onLocationChanged(LatLong latLng) {
+  ///  address (String): The address parameter represents the current address of the location.
+  void onLocationChanged({required latLng, String? address}) {
     pickData(latLng).then(
       (PickedData pickedData) {
         if (widget.onChanged != null) widget.onChanged!(pickedData);
         // These two lines, and the onError callback below are the replacement =
         // for the entire setNameCurrentPos function.
-        _searchController.text = pickedData.address;
+        _searchController.text = address ?? pickedData.address;
         setState(() {});
       },
     ).onError<Exception>((error, stackTrace) {
@@ -508,12 +505,23 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     /// position of the user and set the initLate and initLong to the current position. If it is false,
     /// it will set the initLate and initLong to the [initPosition].latitude and
     /// [initPosition].longitude.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initPosition != null) {
+        initPosition = LatLong(
+            widget.initPosition!.latitude, widget.initPosition!.longitude);
+        onLocationChanged(latLng: initPosition);
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+
     if (widget.trackMyPosition) {
       _determinePosition().then((currentPosition) {
         initPosition =
-            LatLong(currentPosition.latitude, currentPosition.longitude);
+            LatLong(currentPosition.latitude!, currentPosition.longitude!);
 
-        onLocationChanged(initPosition);
+        onLocationChanged(latLng: initPosition);
         _animatedMapMove(initPosition.toLatLng(), 18.0);
       }, onError: (e) => onError(e)).whenComplete(
         () => setState(
@@ -522,15 +530,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           },
         ),
       );
-    } else if (widget.initPosition != null) {
-      initPosition = LatLong(
-          widget.initPosition!.latitude, widget.initPosition!.longitude);
-      onLocationChanged(initPosition);
-      setState(() {
-        isLoading = false;
-      });
     } else {
-      onLocationChanged(initPosition);
+      onLocationChanged(latLng: initPosition);
       setState(() {
         isLoading = false;
       });
@@ -542,7 +543,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       if (event is MapEventMoveEnd) {
         LatLong center = LatLong(
             event.camera.center.latitude, event.camera.center.longitude);
-        onLocationChanged(center);
+        onLocationChanged(latLng: center);
       }
     });
 
@@ -574,8 +575,10 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             LatLong center =
                 LatLong(_options[index].latitude, _options[index].longitude);
             _animatedMapMove(center.toLatLng(), 18.0);
-            onLocationChanged(center);
-
+            onLocationChanged(
+              latLng: center,
+              address: _options[index].displayname,
+            );
             _focusNode.unfocus();
             _options.clear();
             setState(() {});
@@ -726,10 +729,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 _determinePosition().then(
                   (currentPosition) {
                     LatLong center = LatLong(
-                        currentPosition.latitude, currentPosition.longitude);
+                        currentPosition.latitude!, currentPosition.longitude!);
                     _animatedMapMove(center.toLatLng(), 18);
-                    onLocationChanged(center);
+                    onLocationChanged(latLng: center);
                   },
+                  onError: (e) => onError(e),
                 );
               },
               child:
@@ -763,6 +767,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             tileProvider: CancellableNetworkTileProvider(),
           ),
           if (widget.showCurrentLocationPointer) _buildCurrentLocation(),
+          ...widget.mapLayers,
         ],
       ),
     );
