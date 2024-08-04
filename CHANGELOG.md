@@ -1,3 +1,13 @@
+## 3.1.0
+
+* Migrate from `Geolocator` to `Location` package.
+* Fix initial location not being set when `initialLocation` is provided.
+* Fix infinite loading screen when user location is turned off.
+* Add `mapLayers` property to allow users to add custom layers to the map.
+* Add `nominatimHost` property to allow users to change the default Nominatim host.
+* Improve performance.
+* Update dependencies
+
 ## 3.0.1
 
 * Fix error of Geolocator.getServiceStatusStream() on web
