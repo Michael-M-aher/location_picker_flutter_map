@@ -523,6 +523,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
         onLocationChanged(latLng: initPosition);
         _animatedMapMove(initPosition.toLatLng(), 18.0);
+        setState(
+              () {
+            isLoading = false;
+          },
+        );
       }, onError: (e) => onError(e)).whenComplete(
         () => setState(
           () {
@@ -732,6 +737,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                         currentPosition.latitude!, currentPosition.longitude!);
                     _animatedMapMove(center.toLatLng(), 18);
                     onLocationChanged(latLng: center);
+                    setState(
+                          () {
+                        isLoading = false;
+                      },
+                    );
                   },
                   onError: (e) => onError(e),
                 );
