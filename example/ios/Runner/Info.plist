@@ -47,5 +47,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Need location access for location based services.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Need location access for location based services.</string>
 </dict>
 </plist>
