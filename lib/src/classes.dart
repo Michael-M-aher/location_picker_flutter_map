@@ -38,8 +38,10 @@ class PickedData {
   final LatLong latLong;
   final String address;
   final Map<String, dynamic> addressData;
+
   /// The full nominatim response
   final dynamic fullResponse;
 
-  const PickedData(this.latLong, this.address, this.addressData, this.fullResponse);
+  const PickedData(
+      this.latLong, this.address, this.addressData, this.fullResponse);
 }
