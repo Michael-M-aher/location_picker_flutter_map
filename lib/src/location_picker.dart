@@ -325,7 +325,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   final Location location = Location();
   final FocusNode _focusNode = FocusNode();
   List<OSMdata> _options = <OSMdata>[];
-  LatLong initPosition = const LatLong(30.0443879, 31.2357257);
+  LatLong initPosition = const LatLong(-6.1754024, 106.8271691649727);
   Timer? _debounce;
   bool isLoading = true;
   late void Function(Exception e) onError;
@@ -512,6 +512,11 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         setState(() {
           isLoading = false;
         });
+      } else {
+        onLocationChanged(latLng: initPosition);
+        setState(() {
+          isLoading = false;
+        });
       }
     });
 
@@ -534,11 +539,6 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           },
         ),
       );
-    } else {
-      onLocationChanged(latLng: initPosition);
-      setState(() {
-        isLoading = false;
-      });
     }
 
     /// The above code is listening to the mapEventStream and when the mapEventMoveEnd event is
