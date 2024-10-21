@@ -25,11 +25,15 @@ class _MyAppState extends State<MyApp> {
               child: Text(_locationText),
               onPressed: () async {
                 LocationData? locationData = await LocationSearch.show(
-                    context: context, lightAdress: true, mode: Mode.fullscreen);
+                  context: context,
+                  lightAddress: true,
+                  mode: Mode.overlay,
+                );
 
-                setState(() {
-                  _locationText = locationData!.address;
-                });
+                if (locationData == null) return;
+
+                _locationText = locationData.address;
+                setState(() {});
               },
             );
           }),

@@ -28,3 +28,9 @@ migrate_working_dir/
 .dart_tool/
 .packages
 build/
+/example/ios/
+/example/android/
+/example/linux/
+/example/macos/
+/example/web/
+/example/windows/

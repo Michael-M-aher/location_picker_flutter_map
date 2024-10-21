@@ -1,5 +1,5 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'classes.g.dart';
 
@@ -9,11 +9,14 @@ class LocationData {
   final double latitude;
   final double longitude;
   final Map<String, dynamic> addressData;
-  LocationData(
-      {required this.address,
-      required this.latitude,
-      required this.longitude,
-      required this.addressData});
+
+  LocationData({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    required this.addressData,
+  });
+
   @override
   String toString() {
     return '$address, $latitude, $longitude';
@@ -32,12 +35,14 @@ class LocationData {
 
   factory LocationData.fromJson(Map<String, dynamic> json) =>
       _$LocationDataFromJson(json);
+
   Map<String, dynamic> toJson() => _$LocationDataToJson(this);
 }
 
 class LatLong {
   final double latitude;
   final double longitude;
+
   LatLong(this.latitude, this.longitude);
 }
 
@@ -54,7 +59,7 @@ class HistoryManager {
 
   Future<void> addToHistory(String itemJson, int limit) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> history = await getHistory();
+    var history = await getHistory();
     history.add(itemJson);
     history = history.toSet().toList();
     if (history.length > limit) {
