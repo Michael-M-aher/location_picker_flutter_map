@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart'
     as marker;
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
@@ -369,11 +370,13 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   ///
   /// Returns:
   ///   A Future<Position> object.
-  Future<LocationData> _determinePosition() async {
+  Future<Position> _determinePosition() async {
     try {
       // Test if location services are enabled.
+      // Position position = await Geolocator.getCurrentPosition();
       await checkLocationPermission();
-      return await location.getLocation();
+      // return await location.getLocation();
+      return await Geolocator.getCurrentPosition();
     } catch (e) {
       rethrow;
     }
@@ -518,7 +521,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     if (widget.trackMyPosition) {
       _determinePosition().then((currentPosition) {
         initPosition =
-            LatLong(currentPosition.latitude!, currentPosition.longitude!);
+            LatLong(currentPosition.latitude, currentPosition.longitude);
 
         onLocationChanged(latLng: initPosition);
         _animatedMapMove(initPosition.toLatLng(), 18.0);
