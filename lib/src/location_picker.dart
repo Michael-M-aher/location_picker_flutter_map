@@ -374,7 +374,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     try {
       // Test if location services are enabled.
       // Position position = await Geolocator.getCurrentPosition();
-      await checkLocationPermission();
+      // await checkLocationPermission();
       // return await location.getLocation();
       return await Geolocator.getCurrentPosition();
     } catch (e) {
