@@ -68,3 +68,28 @@ class HistoryManager {
     await prefs.setStringList(_historyKey, history);
   }
 }
+
+/// An User-Agent is an http request header that is sent with each request.
+/// OpenStreetMap’s Nominatim service (used for geocoding) requires a user-agent to identify your application.
+/// If you don’t provide one, your requests might get blocked or throttled.
+class UserAgent{
+  /// The name of your application (eg: geo-app)
+  final String appName;
+
+  /// The version of the application (eg: 1.0.0)
+  final String? version;
+
+  /// Email contact. OSM Nominatim asks that the user_agent also contains your email address (eg: support@myapp.com)
+  final String email;
+
+  UserAgent({
+    required this.appName,
+    required this.email,
+    this.version="1.0"
+  });
+
+  @override
+  String toString() {
+    return '$appName/$version ($email)';
+  }
+}

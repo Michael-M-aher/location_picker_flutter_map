@@ -80,9 +80,15 @@ class LocationSearchWidget extends StatefulWidget {
 
   final int historyMaxLength;
 
+  /// [userAgent] : OpenStreetMap’s Nominatim service (used for geocoding) requires a user-agent to identify your application. If you don’t provide one, your requests might get blocked or throttled
+  ///
+
+  final UserAgent userAgent;
+
   const LocationSearchWidget({
     super.key,
     required this.onPicked,
+    required this.userAgent,
     this.onError,
     this.language = 'en',
     this.countryCodes,
@@ -187,7 +193,12 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
         "https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentPos.latitude}&lon=${currentPos.longitude}&zoom=18&addressdetails=1&accept-language=${widget.language}${widget.countryCodes == null ? '' : '&countrycodes=${widget.countryCodes}'}";
 
     try {
-      final response = await client.get(Uri.parse(url));
+      final response = await client.get(
+        Uri.parse(url),
+        headers: {
+          'User-Agent': widget.userAgent.toString(),
+        },
+      );
       final decodedResponse =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
 
@@ -429,7 +440,12 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
       },
     );
 
-    final response = await _client.get(uri);
+    final response = await _client.get(
+        Uri.parse(url),
+        headers: {
+          'User-Agent': widget.userAgent.toString(),
+        },
+      );
 
     final decodedResponse =
         jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
@@ -523,6 +539,7 @@ class LocationSearch {
     String language = 'en',
     List<String>? countryCodes,
     Color? searchBarBackgroundColor,
+    required UserAgent userAgent,
     Color searchBarTextColor = Colors.black87,
     String searchBarHintText = 'Search location',
     String currentPositionButtonText = 'Use current location',
@@ -548,6 +565,7 @@ class LocationSearch {
           loadingWidget: loadingWidget,
           mode: mode,
           historyMaxLength: historyMaxLength,
+          userAgent: userAgent,
         );
 
     if (mode == Mode.overlay) {

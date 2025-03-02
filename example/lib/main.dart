@@ -28,6 +28,7 @@ class _MyAppState extends State<MyApp> {
                   context: context,
                   lightAddress: true,
                   mode: Mode.overlay,
+                  userAgent: UserAgent(appName: 'Location Search Example', email: 'support@myapp.com')
                 );
 
                 if (locationData == null) return;
