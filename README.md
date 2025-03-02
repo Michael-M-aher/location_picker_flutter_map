@@ -144,7 +144,7 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      flutter_location_search: ^1.2.0
+      flutter_location_search: ^2.2.0
 
 ## Getting Started
 
@@ -159,7 +159,8 @@ To use, call the _*LocationSearch.show()*_ function
     ```
     LocationData? locationData = await LocationSearch.show(
                     context: context,
-                    mode: Mode.fullscreen
+                    userAgent: UserAgent(appName: 'Location Search Example', email: 'support@myapp.com'),
+                    mode: Mode.fullscreen,
                     );
     ```
 
@@ -190,6 +191,10 @@ _*LocationSearch*_ has the following parameters:
 - _*mode*_ : mode of display (fullscreen or overlay)
 
 - _*historyMaxLength*_ : (int) set the capacity or maximum length of history
+- _*userAgent*_ : (UserAgent)  http request header that is sent with each request.
+
+$OpenStreetMap’s Nominatim* service (used for geocoding) requires a user-agent to identify your application.
+If you don’t provide one, your requests might get blocked or throttled. Hence this parameters *is mandatory since version _2.0.0_*.
 
 
 # Usage
@@ -222,7 +227,8 @@ TextButton(
     LocationData? locationData = await LocationSearch.show(
       context: context,
       lightAdress: true,
-      mode: Mode.fullscreen
+      mode: Mode.fullscreen,
+      userAgent: UserAgent(appName: 'Location Search Example', email: 'support@myapp.com')
       );
 
     setState(() {

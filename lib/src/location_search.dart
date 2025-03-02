@@ -419,6 +419,16 @@ class _LocationSearchWidgetState extends State<LocationSearchWidget> {
             ],
           ),
         ),
+          Container(
+          margin: const EdgeInsets.all(5),
+              
+              child: const  Text(
+                '© OpenStreetMap contributors.',
+                style: TextStyle(
+                  fontSize: 10,
+                ),
+              ),
+        ),
       ],
     );
   }

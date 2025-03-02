@@ -1,3 +1,12 @@
+## 2.0.0
+
+* Add user-agent to requests
+* Add OpenStreetMap credits
+
+## 1.2.0
+
+* Fix responsive UI issue
+
 ## 1.1.4
 
 * Fix API call method
