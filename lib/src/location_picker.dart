@@ -50,6 +50,10 @@ class FlutterLocationPicker extends StatefulWidget {
   ///
   final String nominatimHost;
 
+  /// [userAgent] : (String) set the user agent package name to use in nominatim requests (example: 'com.example.app')
+  /// This is required for nominatim requests, otherwise rate limits are applied to your requests
+  final String userAgent;
+
   /// [nominatimAdditionalQueryParameters] : (Map<String,dynamic>) additional parameters to add to the nominatim query. Can also be used to override existing parameters (example: {'extratags': '1'}) (default = null)
   ///
   final Map<String, dynamic>? nominatimAdditionalQueryParameters;
@@ -253,6 +257,7 @@ class FlutterLocationPicker extends StatefulWidget {
   const FlutterLocationPicker({
     super.key,
     required this.onPicked,
+    required this.userAgent,
     this.onChanged,
     this.selectedLocationButtonTextStyle = const TextStyle(fontSize: 20),
     this.onError,
@@ -468,9 +473,12 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       'addressdetails': '1',
       'accept-language': widget.mapLanguage,
     };
+    final headers = {
+      'user-agent': widget.userAgent,
+    };
     queryParameters.addAll(widget.nominatimAdditionalQueryParameters ?? {});
     var uri = Uri.https(widget.nominatimHost, '/reverse', queryParameters);
-    var response = await client.get(uri);
+    var response = await client.get(uri, headers: headers);
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
     String displayName = "This Location is not accessible";
     Map<String, dynamic> address;
@@ -736,7 +744,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
                 _determinePosition().then(
                   (currentPosition) {
                     LatLong center = LatLong(
-                        currentPosition.latitude!, currentPosition.longitude!);
+                        currentPosition.latitude, currentPosition.longitude);
                     _animatedMapMove(center.toLatLng(), 18);
                     onLocationChanged(latLng: center);
                     setState(
