@@ -10,7 +10,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
-import 'package:location/location.dart';
 
 import 'classes.dart';
 import 'widgets/copyright_osm_widget.dart';
@@ -327,7 +326,6 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   // Create a animation controller that has a duration and a TickerProvider.
   late AnimationController _animationController;
   final TextEditingController _searchController = TextEditingController();
-  final Location location = Location();
   final FocusNode _focusNode = FocusNode();
   List<OSMdata> _options = <OSMdata>[];
   LatLong initPosition = const LatLong(30.0443879, 31.2357257);
@@ -347,25 +345,87 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   }
 
   Future<void> checkLocationPermission() async {
-    bool serviceEnabled = await location.serviceEnabled();
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        const error = 'Location services are disabled.';
-        throw Exception(error);
+      // Prompt user to enable location services
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Enable Location Services'),
+          content: const Text('Location services are disabled. Please enable them in your device settings.'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await Geolocator.openLocationSettings();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Open Settings'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      );
+      throw Exception('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      // Show rationale and request permission
+      bool shouldRequest = await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Location Permission'),
+          content: const Text('This app needs location access to function properly.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Allow'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Deny'),
+            ),
+          ],
+        ),
+      ) ?? false;
+      if (shouldRequest) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied) {
+        throw Exception('Location permissions are denied');
       }
     }
 
-    PermissionStatus permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        const error = 'Location permission denied';
-        onError(Exception(error));
-      }
-    } else if (permissionGranted == PermissionStatus.deniedForever) {
-      const error = 'Location permission denied forever';
-      throw Exception(error);
+    if (permission == LocationPermission.deniedForever) {
+      // Prompt user to open app settings
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Permission Required'),
+          content: const Text('Location permissions are permanently denied. Please enable them in app settings.'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await Geolocator.openAppSettings();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Open Settings'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      );
+      throw Exception('Location permissions are permanently denied, we cannot request permissions.');
     }
   }
 
@@ -378,7 +438,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     try {
       // Test if location services are enabled.
       // Position position = await Geolocator.getCurrentPosition();
-      // await checkLocationPermission();
+      await checkLocationPermission();
       // return await location.getLocation();
       return await Geolocator.getCurrentPosition();
     } catch (e) {
