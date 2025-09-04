@@ -795,9 +795,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   }
 
   Widget _buildCurrentLocation() {
-    return marker.CurrentLocationLayer(
-      style: const marker.LocationMarkerStyle(
-        markerDirection: marker.MarkerDirection.heading,
+    return CurrentLocationLayer(
+      style: const LocationMarkerStyle(
+        markerDirection: MarkerDirection.heading,
         headingSectorRadius: 60,
         markerSize: Size(18, 18),
       ),
