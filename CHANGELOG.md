@@ -1,3 +1,49 @@
+## 4.0.0
+
+* **MAJOR REFACTORING**: Complete code architecture overhaul with clean code practices
+* **NEW**: Service layer architecture with dedicated service classes:
+  - `LocationService`: Handles all GPS and location operations with modern `LocationSettings` API
+  - `GeocodingService`: Manages Nominatim API interactions with proper HTTP headers
+  - `PermissionService`: User-friendly permission handling with informative dialogs
+  - `Debouncer`: Optimized search input handling with configurable delays
+* **NEW**: Enhanced error handling with custom exception classes (`LocationException`, `GeocodingException`)
+* **NEW**: Configuration classes for better code organization:
+  - `MapConfiguration`: Centralized map settings (tiles, zoom, language, bounds)
+  - `SearchConfiguration`: Search functionality options (results, styling, behavior)
+  - `ControlsConfiguration`: Comprehensive UI control styling (zoom buttons, location button)
+  - `MarkerConfiguration`: Location marker appearance and behavior
+  - `SelectButtonConfiguration`: Select location button customization
+  - `AttributionConfiguration`: OSM attribution badge settings
+* **NEW**: `FlutterLocationPicker.withConfiguration()` constructor for cleaner configuration
+* **NEW**: Extensive zoom button customization:
+  - Custom icons (`zoomInIcon`, `zoomOutIcon`, `locationIcon`)
+  - Button shapes and elevation (`buttonShape`, `buttonElevation`)
+  - Individual button sizes (`zoomButtonsSize`, `locationButtonSize`)
+  - Shadow effects (`showButtonShadow`)
+  - Positioning and spacing controls
+* **NEW**: Enhanced HTTP headers for Nominatim API compliance:
+  - Proper User-Agent validation and error handling
+  - Support for custom headers and authentication
+  - Rate limiting detection and informative error messages
+* **NEW**: Timeout handling for all network requests
+* **IMPROVED**: Better separation of concerns with cleaner method structure
+* **IMPROVED**: Enhanced data classes with validation, equality operators, and helper methods
+* **IMPROVED**: Comprehensive documentation with dartdoc comments and usage examples
+* **IMPROVED**: Better resource management and disposal patterns
+* **IMPROVED**: User experience with better permission dialogs and error messages
+* **IMPROVED**: Performance optimizations and HTTP client management
+* **IMPROVED**: RTL language support and internationalization
+* **IMPROVED**: Formatted address components with smart parsing
+* **IMPROVED**: Search functionality with configurable debouncing and result limits
+* **FIXED**: All deprecation warnings and modernized API usage
+* **FIXED**: Memory leaks with proper controller disposal
+* **FIXED**: Nominatim API compliance with proper HTTP headers and User-Agent
+* **BREAKING CHANGES**:
+  - Service classes are now exported and can be used independently
+  - Enhanced data classes with new methods and properties
+  - Improved error handling may require updates to error callback handling
+  - User-Agent parameter is now strictly validated for Nominatim compliance
+
 ## 3.1.0
 
 * Migrate from `Geolocator` to `Location` package.

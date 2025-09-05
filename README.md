@@ -1,24 +1,55 @@
 # location_picker_flutter_map
 
-A Flutter package that provides Place search and Location picker for flutter maps with a lot of customizations using Open Street Map.
+A comprehensive Flutter package that provides location picking, place search, and map interactions using OpenStreetMap with extensive customization options and clean architecture.
 
 [![Get the library](https://img.shields.io/badge/Get%20library-pub-blue)](https://pub.dev/packages/location_picker_flutter_map) &nbsp; [![Example](https://img.shields.io/badge/Example-Ex-success)](https://pub.dev/packages/location_picker_flutter_map/example)
 
-## Features
+## ✨ Features
 
-* Pick location from map
-* Show current location pointer on map
-* Search location by places
-* Show/Hide controllers, buttons and searchBar
-* Use custom map style
-* Easy to use
+* **🗺️ Interactive Map**: Pan, zoom, and tap to select locations
+* **🔍 Smart Search**: Real-time location search with autocomplete suggestions
+* **📍 Current Location**: GPS-based location tracking with intelligent permission handling
+* **🎨 Highly Customizable**: 50+ customization options organized in configuration classes
+* **🔧 Clean Architecture**: Service layer pattern with dedicated classes for different concerns
+* **🌍 Multi-language**: RTL support and internationalization
+* **⚡ Performance Optimized**: Efficient API calls, debouncing, and resource management
+* **🛡️ Error Handling**: Comprehensive error management with user-friendly messages
+* **🔒 Permission Management**: Smart permission dialogs with clear explanations
 
-## Getting Started
+## 🎯 What's New in v4.0.0
 
-<img src="https://user-images.githubusercontent.com/25803558/186015160-ac89e47e-374d-42fb-b0d7-35ce660726d0.png" width="300" height="600" />
+### 🏗️ **Clean Architecture & Service Layer**
+- **LocationService**: Modern GPS operations with `LocationSettings` API
+- **GeocodingService**: Nominatim API with proper HTTP headers and rate limiting
+- **PermissionService**: User-friendly permission dialogs
+- **Configuration Classes**: Organized settings for each component
 
+### 🎛️ **Enhanced Control Customization**
+```dart
+ControlsConfiguration(
+  zoomInIcon: Icons.add_circle,           // Custom zoom icons
+  zoomOutIcon: Icons.remove_circle,
+  buttonShape: RoundedRectangleBorder(    // Custom button shapes
+    borderRadius: BorderRadius.circular(15),
+  ),
+  buttonElevation: 8.0,                   // Shadow effects
+  zoomButtonsSize: 60.0,                  // Individual sizing
+  showButtonShadow: true,                 // Enable/disable shadows
+)
+```
 
-## Setup
+### 🔧 **Better Configuration Pattern**
+```dart
+FlutterLocationPicker.withConfiguration(
+  userAgent: 'MyApp/1.0.0 (contact@mycompany.com)',
+  mapConfiguration: MapConfiguration(/*...*/),
+  searchConfiguration: SearchConfiguration(/*...*/),
+  controlsConfiguration: ControlsConfiguration(/*...*/),
+  // ... other configurations
+)
+```
+
+## 📱 Platform Setup
 
 To add the location_picker_flutter_map to your Flutter application read the instructions. Below are some Android and iOS specifics that are required for the package to work correctly.
   
@@ -31,7 +62,7 @@ Since version 5.0.0 this plugin is implemented using the Flutter 1.12 Android pl
 
 **AndroidX** 
 
-The location_picker_flutter_map plugin requires the AndroidX version of the Android Support Libraries. This means you need to make sure your Android project supports AndroidX. Detailed instructions can be found [here](https://flutter.dev/docs/development/packages-and-plugins/androidx-compatibility). 
+The geolocator plugin requires the AndroidX version of the Android Support Libraries. This means you need to make sure your Android project supports AndroidX. Detailed instructions can be found [here](https://flutter.dev/docs/development/packages-and-plugins/androidx-compatibility). 
 
 The TL;DR version is:
 
@@ -41,37 +72,38 @@ The TL;DR version is:
 android.useAndroidX=true
 android.enableJetifier=true
 ```
-2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file:
+2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file to 35:
 
 ```
 android {
-  compileSdkVersion 33
+  compileSdkVersion 35
 
   ...
 }
 ```
-
-3. Make sure you set the `minSdkVersion` in your "android/app/build.gradle" file:
-
-```
-android {
-  minSdkVersion 23
-
-  ...
-}
-```
-
-4. Make sure you replace all the `android.` dependencies to their AndroidX counterparts (a full list can be found here: [Migrating to AndroidX](https://developer.android.com/jetpack/androidx/migrate)).
+3. Make sure you replace all the `android.` dependencies to their AndroidX counterparts (a full list can be found here: [Migrating to AndroidX](https://developer.android.com/jetpack/androidx/migrate)).
 
 **Permissions**
 
-On Android you'll need to add either the `ACCESS_COARSE_LOCATION` or the `ACCESS_FINE_LOCATION` permission to your Android Manifest. To do so open the AndroidManifest.xml file (located under android/app/src/main) and add one of the following two lines as direct children of the `<manifest>` tag (when you configure both permissions the `ACCESS_FINE_LOCATION` will be used by the location_picker_flutter_map plugin):
+On Android you'll need to add either the `ACCESS_COARSE_LOCATION` or the `ACCESS_FINE_LOCATION` permission to your Android Manifest. To do so open the AndroidManifest.xml file (located under android/app/src/main) and add one of the following two lines as direct children of the `<manifest>` tag (when you configure both permissions the `ACCESS_FINE_LOCATION` will be used by the geolocator plugin):
 
 ``` xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ```
 
+Starting from Android 10 you need to add the `ACCESS_BACKGROUND_LOCATION` permission (next to the `ACCESS_COARSE_LOCATION` or the `ACCESS_FINE_LOCATION` permission) if you want to continue receiving updates even when your App is running in the background:
+
+``` xml
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+```
+
+Starting from Android 14 (SDK 34) you need to add the `FOREGROUND_SERVICE_LOCATION` permission (next to the `ACCESS_COARSE_LOCATION` or the `ACCESS_FINE_LOCATION` or the `ACCESS_BACKGROUND_LOCATION` permission) if you want to continue receiving updates even when your App is running in the foreground:
+ [FOREGROUND_SERVICE_LOCATION](https://developer.android.com/reference/android/Manifest.permission#FOREGROUND_SERVICE_LOCATION) 
+
+ ``` xml
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
+ ```
 
 > **NOTE:** Specifying the `ACCESS_COARSE_LOCATION` permission results in location updates with an accuracy approximately equivalent to a city block. It might take a long time (minutes) before you will get your first locations fix as `ACCESS_COARSE_LOCATION` will only use the network services to calculate the position of the device. More information can be found [here](https://developer.android.com/training/location/retrieve-current#permissions). 
 
@@ -81,16 +113,32 @@ On Android you'll need to add either the `ACCESS_COARSE_LOCATION` or the `ACCESS
 <details>
 <summary>iOS</summary>
 
-On iOS you'll need to add the following entries to your Info.plist file (located under ios/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningful in the context of your App):
+On iOS you'll need to add the following entry to your Info.plist file (located under ios/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningful in the context of your App):
 
 ``` xml
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>This app needs access to location when open.</string>
-<key>NSLocationAlwaysUsageDescription</key>
-<string>This app needs access to location when in the background.</string>
 ```
 
-If you would like to receive updates when your App is in the background, you'll also need to add the Background Modes capability to your XCode project (Project > Signing and Capabilities > "+ Capability" button) and select Location Updates. Be careful with this, you will need to explain in detail to Apple why your App needs this when submitting your App to the AppStore. If Apple isn't satisfied with the explanation your App will be rejected.
+If you don't need to receive updates when your app is in the background, then add a compiler flag as follows: in XCode, click on Pods, choose the Target 'geolocator_apple', choose Build Settings, in the search box look for 'Preprocessor Macros' then add the `BYPASS_PERMISSION_LOCATION_ALWAYS=1` flag.
+Setting this flag prevents your app from requiring the `NSLocationAlwaysAndWhenInUseUsageDescription` entry in Info.plist, and avoids questions from Apple when submitting your app. 
+
+You can also have the flag set automatically by adding the following to the `ios/Podfile` of your application:
+```agsl
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    if target.name == "geolocator_apple"
+      target.build_configurations.each do |config|
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', 'BYPASS_PERMISSION_LOCATION_ALWAYS=1']
+      end
+    end
+  end
+end
+```
+
+If you do want to receive updates when your App is in the background (or if you don't bypass the permission request as described above) then you'll need to:
+* Add the Background Modes capability to your XCode project (Project > Signing and Capabilities > "+ Capability" button) and select Location Updates. Be careful with this, you will need to explain in detail to Apple why your App needs this when submitting your App to the AppStore. If Apple isn't satisfied with the explanation your App will be rejected.
+* Add an `NSLocationAlwaysAndWhenInUseUsageDescription` entry to your Info.plist (use `NSLocationAlwaysUsageDescription` if you're targeting iOS <11.0) 
 
 When using the `requestTemporaryFullAccuracy({purposeKey: "YourPurposeKey"})` method, a dictionary should be added to the Info.plist file.
 ```xml
@@ -105,17 +153,26 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 > NOTE: the first time requesting temporary full accuracy access it might take several seconds for the pop-up to show. This is due to the fact that iOS is determining the exact user location which may take several seconds. Unfortunately this is out of our hands.
 </details>
 
+On iOS 16 and above you need to specify `UIBackgroundModes` `location` to receive location updates in the background.
+
+``` xml
+<key>UIBackgroundModes</key>
+<array>
+  <string>location</string>
+</array>
+```
+
 <details>
 <summary>macOS</summary>
 
-On macOS you'll need to add the following entries to your Info.plist file (located under macOS/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningful in the context of your App):
+On macOS you'll need to add the following entries to your Info.plist file (located under macOS/Runner) in order to access the device's location. Simply open your Info.plist file and add the following (make sure you update the description so it is meaningfull in the context of your App):
 
 ``` xml
 <key>NSLocationUsageDescription</key>
 <string>This app needs access to location.</string>
 ```
 
-You will also have to add the following entry to the DebugProfile.entitlements and Release.entitlements files. This will declare that your App wants to make use of the device's location services and adds it to the list in the "System Preferences" -> "Security & Privacy" -> "Privacy" settings.
+You will also have to add the following entry to the DebugProfile.entitlements and Release.entitlements files. This will declare that your App wants to make use of the device's location services and adds it to the list in the "System Preferences" -> "Security & Privace" -> "Privacy" settings.
 ```xml
 <key>com.apple.security.personal-information.location</key>
 <true/>
@@ -134,83 +191,222 @@ The second key (in this example called `YourPurposeKey`) should match the purpos
 > NOTE: the first time requesting temporary full accuracy access it might take several seconds for the pop-up to show. This is due to the fact that macOS is determining the exact user location which may take several seconds. Unfortunately this is out of our hands.
 </details>
 
+<details>
+<summary>Web</summary>
+
+To use the Geolocator plugin on the web you need to be using Flutter 1.20 or higher. Flutter will automatically add the endorsed [geolocator_web]() package to your application when you add the `geolocator: ^6.2.0` dependency to your `pubspec.yaml`.
+
+The following methods of the geolocator API are not supported on the web and will result in a `UnsupportedError`:
+
+- `getLastKnownPosition({ bool forceAndroidLocationManager = true })`
+- `openAppSettings()`
+- `openLocationSettings()`
+- `getServiceStatusStream()`
+
+**NOTE**
+
+Geolocator Web is available only in [secure_contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) (HTTPS). More info about the Geolocator API can be found [here](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API).
+
+</details>
+
+<details>
+<summary>Windows</summary>
+
+To use the Geolocator plugin on Windows you need to be using Flutter 2.10 or higher. Flutter will automatically add the endorsed [geolocator_windows]() package to your application when you add the `geolocator: ^8.1.0` dependency to your `pubspec.yaml`.
+
+</details>
+
 
 ## Installing
 
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^3.1.0
+      location_picker_flutter_map: ^4.0.0
 
-## Simple Usage
+## 🚀 Getting Started
 
+<img src="https://user-images.githubusercontent.com/25803558/186015160-ac89e47e-374d-42fb-b0d7-35ce660726d0.png" width="300" height="600" />
 
-Import the following package in your dart file
+### 📱 Basic Usage
 
 ```dart
 import 'package:location_picker_flutter_map/location_picker_flutter_map.dart';
+
+// Simple usage
+FlutterLocationPicker(
+  userAgent: 'MyApp/1.0.0 (contact@example.com)', // Required!
+  onPicked: (PickedData pickedData) {
+    print('Location: ${pickedData.latLong}');
+    print('Address: ${pickedData.address}');
+  },
+)
 ```
 
-To use is simple, just call the widget bellow. You need to pass the onPicked method to get the picked position from the map.
+### 🎨 Advanced Customization
 
-    FlutterLocationPicker(
-            initZoom: 11,
-            minZoomLevel: 5,
-            maxZoomLevel: 16,
-            trackMyPosition: true,
-            onPicked: (pickedData) {
-            })
+```dart
+FlutterLocationPicker.withConfiguration(
+  userAgent: 'MyApp/1.0.0 (contact@example.com)',
+  onPicked: (pickedData) => handleLocationPicked(pickedData),
+  
+  // Map Configuration
+  mapConfiguration: MapConfiguration(
+    initZoom: 15.0,
+    stepZoom: 2.0,
+    mapLanguage: 'en',
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  ),
+  
+  // Search Configuration  
+  searchConfiguration: SearchConfiguration(
+    maxSearchResults: 8,
+    searchBarHintText: 'Search for places...',
+    searchbarDebounceDuration: Duration(milliseconds: 300),
+  ),
+  
+  // Controls Configuration
+  controlsConfiguration: ControlsConfiguration(
+    zoomInIcon: Icons.add_circle_outline,
+    zoomOutIcon: Icons.remove_circle_outline,
+    locationIcon: Icons.my_location_rounded,
+    zoomButtonsColor: Colors.white,
+    zoomButtonsBackgroundColor: Colors.blue.shade700,
+    buttonElevation: 8.0,
+    buttonShape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+  
+  // Marker Configuration
+  markerConfiguration: MarkerConfiguration(
+    markerIcon: Icon(Icons.location_pin, color: Colors.red, size: 60),
+    showMarkerShadow: true,
+    animateMarker: true,
+  ),
+  
+  // Select Button Configuration
+  selectButtonConfiguration: SelectButtonConfiguration(
+    selectLocationButtonText: 'Choose This Location',
+    selectLocationButtonStyle: ElevatedButton.styleFrom(
+      backgroundColor: Colors.green,
+      foregroundColor: Colors.white,
+    ),
+  ),
+)
+```
 
+## ⚠️ Important: User-Agent Requirement
 
-# Then Usage
+**Nominatim API requires a valid User-Agent header.** Provide your app information:
 
-Now if you press Set Current Location button, you will get the pinned location by onPicked method.
+```dart
+// ✅ Correct format
+userAgent: 'MyLocationApp/1.2.0 (developer@mycompany.com)'
 
-Or you can use onChanged method to get the picked data whenever user change marker location on map.
+// ❌ These will cause 403 errors
+userAgent: 'Dart/2.17 (dart:io)'  // Generic HTTP library agent
+userAgent: 'http'                 // Too generic
+userAgent: ''                     // Empty string
+```
 
-The onPicked and onChanged methods return pickedData.
+## 📚 Configuration Classes
 
-pickedData has three properties.
+### 🗺️ MapConfiguration
+```dart
+MapConfiguration(
+  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  initZoom: 17.0,
+  stepZoom: 1.0,
+  minZoomLevel: 2.0,
+  maxZoomLevel: 18.4,
+  mapLanguage: 'en',
+  mapAnimationDuration: Duration(milliseconds: 2000),
+)
+```
 
-1. latLong
-2. address     `//String address`
-3. addressData  `//Map<String, dynamic> contains address details`
+### 🔍 SearchConfiguration
+```dart
+SearchConfiguration(
+  showSearchBar: true,
+  searchBarHintText: 'Search location',
+  maxSearchResults: 5,
+  searchbarDebounceDuration: Duration(milliseconds: 500),
+  searchResultIcon: Icons.location_on,
+)
+```
 
-latLong has two more properties.
+### 🎛️ ControlsConfiguration
+```dart
+ControlsConfiguration(
+  showZoomController: true,
+  showLocationController: true,
+  zoomInIcon: Icons.zoom_in,
+  zoomOutIcon: Icons.zoom_out,
+  locationIcon: Icons.my_location,
+  buttonElevation: 6.0,
+  controlButtonsSpacing: 16.0,
+)
+```
 
-1. latitude
-2. longitude
+### 📍 MarkerConfiguration
+```dart
+MarkerConfiguration(
+  markerIcon: Icon(Icons.location_pin, color: Colors.blue),
+  markerIconOffset: 50.0,
+  animateMarker: true,
+  showMarkerShadow: true,
+)
+```
 
+## 🔧 Service Classes (Available for Independent Use)
 
-For example
+```dart
+// Location operations
+final locationService = LocationService();
+final position = await locationService.getCurrentPosition();
 
-    FlutterLocationPicker(
-            initPosition: LatLong(23, 89),
-            selectLocationButtonStyle: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.blue),
-            ),
-            selectedLocationButtonTextstyle: const TextStyle(fontSize: 18),
-            selectLocationButtonText: 'Set Current Location',
-            selectLocationButtonLeadingIcon: const Icon(Icons.check),
-            initZoom: 11,
-            minZoomLevel: 5,
-            maxZoomLevel: 16,
-            trackMyPosition: true,
-            onError: (e) => print(e),
-            onPicked: (pickedData) {
-              print(pickedData.latLong.latitude);
-              print(pickedData.latLong.longitude);
-              print(pickedData.address);
-              print(pickedData.addressData['country']);
-            },
-            onChanged: (pickedData) {
-              print(pickedData.latLong.latitude);
-              print(pickedData.latLong.longitude);
-              print(pickedData.address);
-              print(pickedData.addressData);
-            })
+// Geocoding operations
+final geocodingService = GeocodingService(
+  nominatimHost: 'nominatim.openstreetmap.org',
+  userAgent: 'MyApp/1.0.0',
+);
+final results = await geocodingService.searchLocations('New York');
 
-You can get latitude, longitude, address and addressData like that.
+// Permission handling
+final permissionService = PermissionService(context);
+await permissionService.checkAndRequestLocationPermission();
+```
+
+## 🛠️ Migration from v3.x to v4.0
+
+### Using Configuration Classes (Recommended)
+```dart
+// v3.x (old way)
+FlutterLocationPicker(
+  userAgent: 'MyApp/1.0',
+  zoomButtonsColor: Colors.white,
+  zoomButtonsBackgroundColor: Colors.blue,
+  searchBarHintText: 'Search...',
+  onPicked: (data) => handlePicked(data),
+)
+
+// v4.0 (new way - cleaner)
+FlutterLocationPicker.withConfiguration(
+  userAgent: 'MyApp/1.0',
+  controlsConfiguration: ControlsConfiguration(
+    zoomButtonsColor: Colors.white,
+    zoomButtonsBackgroundColor: Colors.blue,
+  ),
+  searchConfiguration: SearchConfiguration(
+    searchBarHintText: 'Search...',
+  ),
+  onPicked: (data) => handlePicked(data),
+)
+```
+
+### Backward Compatibility
+The old constructor still works! Your existing code will continue to function without changes.
 
 
 # Custom Map Style
