@@ -5,7 +5,8 @@ import '../classes.dart';
 
 /// Enhanced stream controller for managing location updates
 class LocationUpdateController {
-  final StreamController<LatLong> _controller = StreamController<LatLong>.broadcast();
+  final StreamController<LatLong> _controller =
+      StreamController<LatLong>.broadcast();
 
   /// Stream of location updates
   Stream<LatLong> get stream => _controller.stream;
@@ -28,9 +29,9 @@ class CoordinateUtils {
   /// Validates if coordinates are within valid ranges
   static bool isValidCoordinate(double latitude, double longitude) {
     return latitude >= -90 &&
-           latitude <= 90 &&
-           longitude >= -180 &&
-           longitude <= 180;
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180;
   }
 
   /// Calculates the center point between two coordinates
@@ -43,7 +44,7 @@ class CoordinateUtils {
   /// Formats coordinates for display
   static String formatCoordinates(LatLong coordinates, {int precision = 6}) {
     return '${coordinates.latitude.toStringAsFixed(precision)}, '
-           '${coordinates.longitude.toStringAsFixed(precision)}';
+        '${coordinates.longitude.toStringAsFixed(precision)}';
   }
 
   /// Converts degrees to radians
@@ -64,6 +65,6 @@ class LocationPickerConstants {
   static const double defaultMarkerOffset = 50.0;
   static const int defaultSearchResultLimit = 5;
   static const String defaultNominatimHost = 'nominatim.openstreetmap.org';
-  static const String defaultTileUrlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  static const String defaultTileUrlTemplate =
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 }
-

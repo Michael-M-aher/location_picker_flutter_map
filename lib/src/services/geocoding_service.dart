@@ -37,7 +37,8 @@ class GeocodingService {
   }
 
   /// Performs reverse geocoding to get address from coordinates
-  Future<PickedData> reverseGeocode(LatLong coordinates, {int? zoomLevel}) async {
+  Future<PickedData> reverseGeocode(LatLong coordinates,
+      {int? zoomLevel}) async {
     final client = http.Client();
 
     try {
@@ -56,29 +57,31 @@ class GeocodingService {
 
       final uri = Uri.https(nominatimHost, '/reverse', queryParameters);
 
-      final response = await client.get(
-        uri,
-        headers: _httpHeaders,
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw GeocodingException('Request timeout: No response from server'),
-      );
+      final response = await client
+          .get(
+            uri,
+            headers: _httpHeaders,
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw GeocodingException(
+                'Request timeout: No response from server'),
+          );
 
       if (response.statusCode == 403) {
         throw GeocodingException(
-          'Access forbidden (403): Please ensure your User-Agent is properly configured. '
-          'Current User-Agent: "$userAgent"'
-        );
+            'Access forbidden (403): Please ensure your User-Agent is properly configured. '
+            'Current User-Agent: "$userAgent"');
       }
 
       if (response.statusCode == 429) {
         throw GeocodingException(
-          'Rate limit exceeded (429): Too many requests. Please wait before making more requests.'
-        );
+            'Rate limit exceeded (429): Too many requests. Please wait before making more requests.');
       }
 
       if (response.statusCode != 200) {
-        throw GeocodingException('HTTP ${response.statusCode}: Failed to fetch location data');
+        throw GeocodingException(
+            'HTTP ${response.statusCode}: Failed to fetch location data');
       }
 
       final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
@@ -86,7 +89,8 @@ class GeocodingService {
     } catch (e) {
       if (e is GeocodingException) rethrow;
       if (e is TimeoutException) {
-        throw GeocodingException('Request timeout: Server took too long to respond');
+        throw GeocodingException(
+            'Request timeout: Server took too long to respond');
       }
       throw GeocodingException('Failed to reverse geocode: ${e.toString()}');
     } finally {
@@ -116,37 +120,41 @@ class GeocodingService {
 
       final uri = Uri.https(nominatimHost, '/search', queryParameters);
 
-      final response = await client.get(
-        uri,
-        headers: _httpHeaders,
-      ).timeout(
-        const Duration(seconds: 15),
-        onTimeout: () => throw GeocodingException('Search timeout: No response from server'),
-      );
+      final response = await client
+          .get(
+            uri,
+            headers: _httpHeaders,
+          )
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => throw GeocodingException(
+                'Search timeout: No response from server'),
+          );
 
       if (response.statusCode == 403) {
         throw GeocodingException(
-          'Access forbidden (403): Please ensure your User-Agent is properly configured. '
-          'Current User-Agent: "$userAgent"'
-        );
+            'Access forbidden (403): Please ensure your User-Agent is properly configured. '
+            'Current User-Agent: "$userAgent"');
       }
 
       if (response.statusCode == 429) {
         throw GeocodingException(
-          'Rate limit exceeded (429): Too many requests. Please wait before making more requests.'
-        );
+            'Rate limit exceeded (429): Too many requests. Please wait before making more requests.');
       }
 
       if (response.statusCode != 200) {
-        throw GeocodingException('HTTP ${response.statusCode}: Failed to search locations');
+        throw GeocodingException(
+            'HTTP ${response.statusCode}: Failed to search locations');
       }
 
-      final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
+      final decodedResponse =
+          jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
       return _parseSearchResponse(decodedResponse);
     } catch (e) {
       if (e is GeocodingException) rethrow;
       if (e is TimeoutException) {
-        throw GeocodingException('Search timeout: Server took too long to respond');
+        throw GeocodingException(
+            'Search timeout: Server took too long to respond');
       }
       throw GeocodingException('Failed to search locations: ${e.toString()}');
     } finally {
@@ -155,18 +163,21 @@ class GeocodingService {
   }
 
   /// Parses reverse geocoding API response
-  PickedData _parseReverseGeocodeResponse(dynamic response, LatLong coordinates) {
+  PickedData _parseReverseGeocodeResponse(
+      dynamic response, LatLong coordinates) {
     const defaultDisplayName = "This location is not accessible";
 
     if (response is! Map<String, dynamic>) {
       return PickedData(coordinates, defaultDisplayName, {}, response);
     }
 
-    final displayName = response['display_name'] as String? ?? defaultDisplayName;
+    final displayName =
+        response['display_name'] as String? ?? defaultDisplayName;
     final addressData = (response['address'] as Map<String, dynamic>?) ?? {};
 
     if (displayName == defaultDisplayName) {
-      return PickedData(const LatLong(0, 0), displayName, addressData, response);
+      return PickedData(
+          const LatLong(0, 0), displayName, addressData, response);
     }
 
     return PickedData(coordinates, displayName, addressData, response);

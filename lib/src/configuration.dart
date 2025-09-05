@@ -87,7 +87,8 @@ class MapConfiguration {
       minZoomLevel: minZoomLevel ?? this.minZoomLevel,
       maxZoomLevel: maxZoomLevel ?? this.maxZoomLevel,
       mapAnimationDuration: mapAnimationDuration ?? this.mapAnimationDuration,
-      mapLoadingBackgroundColor: mapLoadingBackgroundColor ?? this.mapLoadingBackgroundColor,
+      mapLoadingBackgroundColor:
+          mapLoadingBackgroundColor ?? this.mapLoadingBackgroundColor,
       maxBounds: maxBounds ?? this.maxBounds,
       customTileProvider: customTileProvider ?? this.customTileProvider,
       tileRequestHeaders: tileRequestHeaders ?? this.tileRequestHeaders,
@@ -198,19 +199,25 @@ class SearchConfiguration {
     return SearchConfiguration(
       showSearchBar: showSearchBar ?? this.showSearchBar,
       searchBarHintText: searchBarHintText ?? this.searchBarHintText,
-      searchBarBackgroundColor: searchBarBackgroundColor ?? this.searchBarBackgroundColor,
+      searchBarBackgroundColor:
+          searchBarBackgroundColor ?? this.searchBarBackgroundColor,
       searchBarTextColor: searchBarTextColor ?? this.searchBarTextColor,
       searchBarHintColor: searchBarHintColor ?? this.searchBarHintColor,
-      searchbarBorderRadius: searchbarBorderRadius ?? this.searchbarBorderRadius,
-      searchbarDebounceDuration: searchbarDebounceDuration ?? this.searchbarDebounceDuration,
+      searchbarBorderRadius:
+          searchbarBorderRadius ?? this.searchbarBorderRadius,
+      searchbarDebounceDuration:
+          searchbarDebounceDuration ?? this.searchbarDebounceDuration,
       maxSearchResults: maxSearchResults ?? this.maxSearchResults,
       searchbarInputBorder: searchbarInputBorder ?? this.searchbarInputBorder,
-      searchbarInputFocusBorder: searchbarInputFocusBorder ?? this.searchbarInputFocusBorder,
+      searchbarInputFocusBorder:
+          searchbarInputFocusBorder ?? this.searchbarInputFocusBorder,
       searchBarMargin: searchBarMargin ?? this.searchBarMargin,
       searchBarPadding: searchBarPadding ?? this.searchBarPadding,
-      searchResultItemHeight: searchResultItemHeight ?? this.searchResultItemHeight,
+      searchResultItemHeight:
+          searchResultItemHeight ?? this.searchResultItemHeight,
       searchResultIcon: searchResultIcon ?? this.searchResultIcon,
-      searchResultIconColor: searchResultIconColor ?? this.searchResultIconColor,
+      searchResultIconColor:
+          searchResultIconColor ?? this.searchResultIconColor,
     );
   }
 }
@@ -346,15 +353,20 @@ class ControlsConfiguration {
   }) {
     return ControlsConfiguration(
       showZoomController: showZoomController ?? this.showZoomController,
-      showLocationController: showLocationController ?? this.showLocationController,
+      showLocationController:
+          showLocationController ?? this.showLocationController,
       zoomButtonsColor: zoomButtonsColor ?? this.zoomButtonsColor,
-      zoomButtonsBackgroundColor: zoomButtonsBackgroundColor ?? this.zoomButtonsBackgroundColor,
+      zoomButtonsBackgroundColor:
+          zoomButtonsBackgroundColor ?? this.zoomButtonsBackgroundColor,
       locationButtonsColor: locationButtonsColor ?? this.locationButtonsColor,
-      locationButtonBackgroundColor: locationButtonBackgroundColor ?? this.locationButtonBackgroundColor,
+      locationButtonBackgroundColor:
+          locationButtonBackgroundColor ?? this.locationButtonBackgroundColor,
       zoomButtonsSize: zoomButtonsSize ?? this.zoomButtonsSize,
       locationButtonSize: locationButtonSize ?? this.locationButtonSize,
-      controlButtonsSpacing: controlButtonsSpacing ?? this.controlButtonsSpacing,
-      controlButtonsPadding: controlButtonsPadding ?? this.controlButtonsPadding,
+      controlButtonsSpacing:
+          controlButtonsSpacing ?? this.controlButtonsSpacing,
+      controlButtonsPadding:
+          controlButtonsPadding ?? this.controlButtonsPadding,
       zoomInIcon: zoomInIcon ?? this.zoomInIcon,
       zoomOutIcon: zoomOutIcon ?? this.zoomOutIcon,
       locationIcon: locationIcon ?? this.locationIcon,
@@ -363,7 +375,8 @@ class ControlsConfiguration {
       controlButtonsBottom: controlButtonsBottom ?? this.controlButtonsBottom,
       controlButtonsEnd: controlButtonsEnd ?? this.controlButtonsEnd,
       showButtonShadow: showButtonShadow ?? this.showButtonShadow,
-      buttonAnimationDuration: buttonAnimationDuration ?? this.buttonAnimationDuration,
+      buttonAnimationDuration:
+          buttonAnimationDuration ?? this.buttonAnimationDuration,
     );
   }
 }
@@ -448,13 +461,15 @@ class MarkerConfiguration {
       markerIcon: markerIcon ?? this.markerIcon,
       markerIconOffset: markerIconOffset ?? this.markerIconOffset,
       animateMarker: animateMarker ?? this.animateMarker,
-      markerAnimationDuration: markerAnimationDuration ?? this.markerAnimationDuration,
+      markerAnimationDuration:
+          markerAnimationDuration ?? this.markerAnimationDuration,
       defaultMarkerColor: defaultMarkerColor ?? this.defaultMarkerColor,
       defaultMarkerSize: defaultMarkerSize ?? this.defaultMarkerSize,
       defaultMarkerIcon: defaultMarkerIcon ?? this.defaultMarkerIcon,
       showMarkerShadow: showMarkerShadow ?? this.showMarkerShadow,
       markerShadowColor: markerShadowColor ?? this.markerShadowColor,
-      markerShadowBlurRadius: markerShadowBlurRadius ?? this.markerShadowBlurRadius,
+      markerShadowBlurRadius:
+          markerShadowBlurRadius ?? this.markerShadowBlurRadius,
     );
   }
 }
@@ -553,19 +568,32 @@ class SelectButtonConfiguration {
     Duration? buttonAnimationDuration,
   }) {
     return SelectButtonConfiguration(
-      showSelectLocationButton: showSelectLocationButton ?? this.showSelectLocationButton,
-      selectLocationButtonText: selectLocationButtonText ?? this.selectLocationButtonText,
-      selectLocationButtonLeadingIcon: selectLocationButtonLeadingIcon ?? this.selectLocationButtonLeadingIcon,
-      selectLocationButtonStyle: selectLocationButtonStyle ?? this.selectLocationButtonStyle,
-      selectLocationButtonWidth: selectLocationButtonWidth ?? this.selectLocationButtonWidth,
-      selectLocationButtonHeight: selectLocationButtonHeight ?? this.selectLocationButtonHeight,
-      selectedLocationButtonTextStyle: selectedLocationButtonTextStyle ?? this.selectedLocationButtonTextStyle,
-      selectLocationButtonPositionTop: selectLocationButtonPositionTop ?? this.selectLocationButtonPositionTop,
-      selectLocationButtonPositionRight: selectLocationButtonPositionRight ?? this.selectLocationButtonPositionRight,
-      selectLocationButtonPositionLeft: selectLocationButtonPositionLeft ?? this.selectLocationButtonPositionLeft,
-      selectLocationButtonPositionBottom: selectLocationButtonPositionBottom ?? this.selectLocationButtonPositionBottom,
-      selectLocationButtonPadding: selectLocationButtonPadding ?? this.selectLocationButtonPadding,
-      buttonAnimationDuration: buttonAnimationDuration ?? this.buttonAnimationDuration,
+      showSelectLocationButton:
+          showSelectLocationButton ?? this.showSelectLocationButton,
+      selectLocationButtonText:
+          selectLocationButtonText ?? this.selectLocationButtonText,
+      selectLocationButtonLeadingIcon: selectLocationButtonLeadingIcon ??
+          this.selectLocationButtonLeadingIcon,
+      selectLocationButtonStyle:
+          selectLocationButtonStyle ?? this.selectLocationButtonStyle,
+      selectLocationButtonWidth:
+          selectLocationButtonWidth ?? this.selectLocationButtonWidth,
+      selectLocationButtonHeight:
+          selectLocationButtonHeight ?? this.selectLocationButtonHeight,
+      selectedLocationButtonTextStyle: selectedLocationButtonTextStyle ??
+          this.selectedLocationButtonTextStyle,
+      selectLocationButtonPositionTop: selectLocationButtonPositionTop ??
+          this.selectLocationButtonPositionTop,
+      selectLocationButtonPositionRight: selectLocationButtonPositionRight ??
+          this.selectLocationButtonPositionRight,
+      selectLocationButtonPositionLeft: selectLocationButtonPositionLeft ??
+          this.selectLocationButtonPositionLeft,
+      selectLocationButtonPositionBottom: selectLocationButtonPositionBottom ??
+          this.selectLocationButtonPositionBottom,
+      selectLocationButtonPadding:
+          selectLocationButtonPadding ?? this.selectLocationButtonPadding,
+      buttonAnimationDuration:
+          buttonAnimationDuration ?? this.buttonAnimationDuration,
     );
   }
 }
@@ -631,14 +659,24 @@ class AttributionConfiguration {
     double? contributorBadgeForOSMPositionBottom,
   }) {
     return AttributionConfiguration(
-      showContributorBadgeForOSM: showContributorBadgeForOSM ?? this.showContributorBadgeForOSM,
-      contributorBadgeForOSMColor: contributorBadgeForOSMColor ?? this.contributorBadgeForOSMColor,
-      contributorBadgeForOSMTextColor: contributorBadgeForOSMTextColor ?? this.contributorBadgeForOSMTextColor,
-      contributorBadgeForOSMText: contributorBadgeForOSMText ?? this.contributorBadgeForOSMText,
-      contributorBadgeForOSMPositionTop: contributorBadgeForOSMPositionTop ?? this.contributorBadgeForOSMPositionTop,
-      contributorBadgeForOSMPositionLeft: contributorBadgeForOSMPositionLeft ?? this.contributorBadgeForOSMPositionLeft,
-      contributorBadgeForOSMPositionRight: contributorBadgeForOSMPositionRight ?? this.contributorBadgeForOSMPositionRight,
-      contributorBadgeForOSMPositionBottom: contributorBadgeForOSMPositionBottom ?? this.contributorBadgeForOSMPositionBottom,
+      showContributorBadgeForOSM:
+          showContributorBadgeForOSM ?? this.showContributorBadgeForOSM,
+      contributorBadgeForOSMColor:
+          contributorBadgeForOSMColor ?? this.contributorBadgeForOSMColor,
+      contributorBadgeForOSMTextColor: contributorBadgeForOSMTextColor ??
+          this.contributorBadgeForOSMTextColor,
+      contributorBadgeForOSMText:
+          contributorBadgeForOSMText ?? this.contributorBadgeForOSMText,
+      contributorBadgeForOSMPositionTop: contributorBadgeForOSMPositionTop ??
+          this.contributorBadgeForOSMPositionTop,
+      contributorBadgeForOSMPositionLeft: contributorBadgeForOSMPositionLeft ??
+          this.contributorBadgeForOSMPositionLeft,
+      contributorBadgeForOSMPositionRight:
+          contributorBadgeForOSMPositionRight ??
+              this.contributorBadgeForOSMPositionRight,
+      contributorBadgeForOSMPositionBottom:
+          contributorBadgeForOSMPositionBottom ??
+              this.contributorBadgeForOSMPositionBottom,
     );
   }
 }

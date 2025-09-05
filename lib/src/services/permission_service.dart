@@ -29,7 +29,8 @@ class PermissionService {
 
       if (permission == LocationPermission.deniedForever) {
         await _showPermanentlyDeniedDialog();
-        throw const LocationException('Location permissions are permanently denied');
+        throw const LocationException(
+            'Location permissions are permanently denied');
       }
 
       return true;
@@ -124,6 +125,6 @@ class PermissionService {
   static Future<bool> hasLocationPermission() async {
     final permission = await LocationService.getPermissionStatus();
     return permission == LocationPermission.whileInUse ||
-           permission == LocationPermission.always;
+        permission == LocationPermission.always;
   }
 }

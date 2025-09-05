@@ -567,63 +567,63 @@ class FlutterLocationPicker extends StatefulWidget {
     this.mapLayers = const [],
     this.onMapTap,
     this.onMapReady,
-  }) :
-    // Set all legacy parameters to null
-    loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
-    urlTemplate = null,
-    mapLanguage = null,
-    initZoom = null,
-    stepZoom = null,
-    minZoomLevel = null,
-    maxZoomLevel = null,
-    maxBounds = null,
-    mapAnimationDuration = null,
-    mapLoadingBackgroundColor = null,
-    showZoomController = null,
-    showLocationController = null,
-    showSelectLocationButton = null,
-    showSearchBar = null,
-    showContributorBadgeForOSM = null,
-    selectLocationButtonText = null,
-    selectLocationButtonLeadingIcon = null,
-    selectLocationButtonStyle = null,
-    selectLocationButtonWidth = null,
-    selectLocationButtonHeight = null,
-    selectedLocationButtonTextStyle = null,
-    selectLocationButtonPositionTop = null,
-    selectLocationButtonPositionRight = null,
-    selectLocationButtonPositionLeft = null,
-    selectLocationButtonPositionBottom = null,
-    searchBarBackgroundColor = null,
-    searchBarTextColor = null,
-    searchBarHintText = null,
-    searchBarHintColor = null,
-    searchbarInputBorder = null,
-    searchbarInputFocusBorderp = null,
-    searchbarBorderRadius = null,
-    searchbarDebounceDuration = null,
-    maxSearchResults = null,
-    zoomButtonsColor = null,
-    zoomButtonsBackgroundColor = null,
-    locationButtonsColor = null,
-    locationButtonBackgroundColor = null,
-    zoomButtonsSize = null,
-    locationButtonSize = null,
-    controlButtonsSpacing = null,
-    controlButtonsPadding = null,
-    markerIcon = null,
-    markerIconOffset = null,
-    animateMarker = null,
-    markerAnimationDuration = null,
-    contributorBadgeForOSMColor = null,
-    contributorBadgeForOSMTextColor = null,
-    contributorBadgeForOSMText = null,
-    contributorBadgeForOSMPositionTop = null,
-    contributorBadgeForOSMPositionLeft = null,
-    contributorBadgeForOSMPositionRight = null,
-    contributorBadgeForOSMPositionBottom = null,
-    customTileProvider = null,
-    tileRequestHeaders = null;
+  })  :
+        // Set all legacy parameters to null
+        loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
+        urlTemplate = null,
+        mapLanguage = null,
+        initZoom = null,
+        stepZoom = null,
+        minZoomLevel = null,
+        maxZoomLevel = null,
+        maxBounds = null,
+        mapAnimationDuration = null,
+        mapLoadingBackgroundColor = null,
+        showZoomController = null,
+        showLocationController = null,
+        showSelectLocationButton = null,
+        showSearchBar = null,
+        showContributorBadgeForOSM = null,
+        selectLocationButtonText = null,
+        selectLocationButtonLeadingIcon = null,
+        selectLocationButtonStyle = null,
+        selectLocationButtonWidth = null,
+        selectLocationButtonHeight = null,
+        selectedLocationButtonTextStyle = null,
+        selectLocationButtonPositionTop = null,
+        selectLocationButtonPositionRight = null,
+        selectLocationButtonPositionLeft = null,
+        selectLocationButtonPositionBottom = null,
+        searchBarBackgroundColor = null,
+        searchBarTextColor = null,
+        searchBarHintText = null,
+        searchBarHintColor = null,
+        searchbarInputBorder = null,
+        searchbarInputFocusBorderp = null,
+        searchbarBorderRadius = null,
+        searchbarDebounceDuration = null,
+        maxSearchResults = null,
+        zoomButtonsColor = null,
+        zoomButtonsBackgroundColor = null,
+        locationButtonsColor = null,
+        locationButtonBackgroundColor = null,
+        zoomButtonsSize = null,
+        locationButtonSize = null,
+        controlButtonsSpacing = null,
+        controlButtonsPadding = null,
+        markerIcon = null,
+        markerIconOffset = null,
+        animateMarker = null,
+        markerAnimationDuration = null,
+        contributorBadgeForOSMColor = null,
+        contributorBadgeForOSMTextColor = null,
+        contributorBadgeForOSMText = null,
+        contributorBadgeForOSMPositionTop = null,
+        contributorBadgeForOSMPositionLeft = null,
+        contributorBadgeForOSMPositionRight = null,
+        contributorBadgeForOSMPositionBottom = null,
+        customTileProvider = null,
+        tileRequestHeaders = null;
 
   @override
   State<FlutterLocationPicker> createState() => _FlutterLocationPickerState();
@@ -673,141 +673,177 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   void _resolveConfigurations() {
     // Resolve MapConfiguration
     _mapConfig = widget.mapConfiguration?.copyWith(
-      urlTemplate: widget.urlTemplate,
-      mapLanguage: widget.mapLanguage,
-      initZoom: widget.initZoom,
-      stepZoom: widget.stepZoom,
-      minZoomLevel: widget.minZoomLevel,
-      maxZoomLevel: widget.maxZoomLevel,
-      maxBounds: widget.maxBounds,
-      mapAnimationDuration: widget.mapAnimationDuration,
-      mapLoadingBackgroundColor: widget.mapLoadingBackgroundColor,
-      customTileProvider: widget.customTileProvider,
-      tileRequestHeaders: widget.tileRequestHeaders,
-    ) ?? MapConfiguration(
-      urlTemplate: widget.urlTemplate ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      mapLanguage: widget.mapLanguage ?? 'en',
-      initZoom: widget.initZoom ?? 17,
-      stepZoom: widget.stepZoom ?? 1,
-      minZoomLevel: widget.minZoomLevel ?? 2,
-      maxZoomLevel: widget.maxZoomLevel ?? 18.4,
-      maxBounds: widget.maxBounds,
-      mapAnimationDuration: widget.mapAnimationDuration ?? const Duration(milliseconds: 2000),
-      mapLoadingBackgroundColor: widget.mapLoadingBackgroundColor,
-      customTileProvider: widget.customTileProvider,
-      tileRequestHeaders: widget.tileRequestHeaders,
-    );
+          urlTemplate: widget.urlTemplate,
+          mapLanguage: widget.mapLanguage,
+          initZoom: widget.initZoom,
+          stepZoom: widget.stepZoom,
+          minZoomLevel: widget.minZoomLevel,
+          maxZoomLevel: widget.maxZoomLevel,
+          maxBounds: widget.maxBounds,
+          mapAnimationDuration: widget.mapAnimationDuration,
+          mapLoadingBackgroundColor: widget.mapLoadingBackgroundColor,
+          customTileProvider: widget.customTileProvider,
+          tileRequestHeaders: widget.tileRequestHeaders,
+        ) ??
+        MapConfiguration(
+          urlTemplate: widget.urlTemplate ??
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          mapLanguage: widget.mapLanguage ?? 'en',
+          initZoom: widget.initZoom ?? 17,
+          stepZoom: widget.stepZoom ?? 1,
+          minZoomLevel: widget.minZoomLevel ?? 2,
+          maxZoomLevel: widget.maxZoomLevel ?? 18.4,
+          maxBounds: widget.maxBounds,
+          mapAnimationDuration:
+              widget.mapAnimationDuration ?? const Duration(milliseconds: 2000),
+          mapLoadingBackgroundColor: widget.mapLoadingBackgroundColor,
+          customTileProvider: widget.customTileProvider,
+          tileRequestHeaders: widget.tileRequestHeaders,
+        );
 
     // Resolve SearchConfiguration
     _searchConfig = widget.searchConfiguration?.copyWith(
-      showSearchBar: widget.showSearchBar,
-      searchBarBackgroundColor: widget.searchBarBackgroundColor,
-      searchBarTextColor: widget.searchBarTextColor,
-      searchBarHintText: widget.searchBarHintText,
-      searchBarHintColor: widget.searchBarHintColor,
-      searchbarInputBorder: widget.searchbarInputBorder,
-      searchbarInputFocusBorder: widget.searchbarInputFocusBorderp,
-      searchbarBorderRadius: widget.searchbarBorderRadius,
-      searchbarDebounceDuration: widget.searchbarDebounceDuration,
-      maxSearchResults: widget.maxSearchResults,
-    ) ?? SearchConfiguration(
-      showSearchBar: widget.showSearchBar ?? true,
-      searchBarBackgroundColor: widget.searchBarBackgroundColor,
-      searchBarTextColor: widget.searchBarTextColor,
-      searchBarHintText: widget.searchBarHintText ?? 'Search location',
-      searchBarHintColor: widget.searchBarHintColor,
-      searchbarInputBorder: widget.searchbarInputBorder,
-      searchbarInputFocusBorder: widget.searchbarInputFocusBorderp,
-      searchbarBorderRadius: widget.searchbarBorderRadius,
-      searchbarDebounceDuration: widget.searchbarDebounceDuration,
-      maxSearchResults: widget.maxSearchResults ?? 5,
-    );
+          showSearchBar: widget.showSearchBar,
+          searchBarBackgroundColor: widget.searchBarBackgroundColor,
+          searchBarTextColor: widget.searchBarTextColor,
+          searchBarHintText: widget.searchBarHintText,
+          searchBarHintColor: widget.searchBarHintColor,
+          searchbarInputBorder: widget.searchbarInputBorder,
+          searchbarInputFocusBorder: widget.searchbarInputFocusBorderp,
+          searchbarBorderRadius: widget.searchbarBorderRadius,
+          searchbarDebounceDuration: widget.searchbarDebounceDuration,
+          maxSearchResults: widget.maxSearchResults,
+        ) ??
+        SearchConfiguration(
+          showSearchBar: widget.showSearchBar ?? true,
+          searchBarBackgroundColor: widget.searchBarBackgroundColor,
+          searchBarTextColor: widget.searchBarTextColor,
+          searchBarHintText: widget.searchBarHintText ?? 'Search location',
+          searchBarHintColor: widget.searchBarHintColor,
+          searchbarInputBorder: widget.searchbarInputBorder,
+          searchbarInputFocusBorder: widget.searchbarInputFocusBorderp,
+          searchbarBorderRadius: widget.searchbarBorderRadius,
+          searchbarDebounceDuration: widget.searchbarDebounceDuration,
+          maxSearchResults: widget.maxSearchResults ?? 5,
+        );
 
     // Resolve ControlsConfiguration
     _controlsConfig = widget.controlsConfiguration?.copyWith(
-      showZoomController: widget.showZoomController,
-      showLocationController: widget.showLocationController,
-      zoomButtonsColor: widget.zoomButtonsColor,
-      zoomButtonsBackgroundColor: widget.zoomButtonsBackgroundColor,
-      locationButtonsColor: widget.locationButtonsColor,
-      locationButtonBackgroundColor: widget.locationButtonBackgroundColor,
-      zoomButtonsSize: widget.zoomButtonsSize,
-      locationButtonSize: widget.locationButtonSize,
-      controlButtonsSpacing: widget.controlButtonsSpacing,
-      controlButtonsPadding: widget.controlButtonsPadding,
-    ) ?? ControlsConfiguration(
-      showZoomController: widget.showZoomController ?? true,
-      showLocationController: widget.showLocationController ?? true,
-      zoomButtonsColor: widget.zoomButtonsColor,
-      zoomButtonsBackgroundColor: widget.zoomButtonsBackgroundColor,
-      locationButtonsColor: widget.locationButtonsColor,
-      locationButtonBackgroundColor: widget.locationButtonBackgroundColor,
-      zoomButtonsSize: widget.zoomButtonsSize,
-      locationButtonSize: widget.locationButtonSize,
-      controlButtonsSpacing: widget.controlButtonsSpacing ?? 16.0,
-      controlButtonsPadding: widget.controlButtonsPadding ?? const EdgeInsets.all(16.0),
-    );
+          showZoomController: widget.showZoomController,
+          showLocationController: widget.showLocationController,
+          zoomButtonsColor: widget.zoomButtonsColor,
+          zoomButtonsBackgroundColor: widget.zoomButtonsBackgroundColor,
+          locationButtonsColor: widget.locationButtonsColor,
+          locationButtonBackgroundColor: widget.locationButtonBackgroundColor,
+          zoomButtonsSize: widget.zoomButtonsSize,
+          locationButtonSize: widget.locationButtonSize,
+          controlButtonsSpacing: widget.controlButtonsSpacing,
+          controlButtonsPadding: widget.controlButtonsPadding,
+        ) ??
+        ControlsConfiguration(
+          showZoomController: widget.showZoomController ?? true,
+          showLocationController: widget.showLocationController ?? true,
+          zoomButtonsColor: widget.zoomButtonsColor,
+          zoomButtonsBackgroundColor: widget.zoomButtonsBackgroundColor,
+          locationButtonsColor: widget.locationButtonsColor,
+          locationButtonBackgroundColor: widget.locationButtonBackgroundColor,
+          zoomButtonsSize: widget.zoomButtonsSize,
+          locationButtonSize: widget.locationButtonSize,
+          controlButtonsSpacing: widget.controlButtonsSpacing ?? 16.0,
+          controlButtonsPadding:
+              widget.controlButtonsPadding ?? const EdgeInsets.all(16.0),
+        );
 
     // Resolve MarkerConfiguration
     _markerConfig = widget.markerConfiguration?.copyWith(
-      markerIcon: widget.markerIcon,
-      markerIconOffset: widget.markerIconOffset,
-      animateMarker: widget.animateMarker,
-      markerAnimationDuration: widget.markerAnimationDuration,
-    ) ?? MarkerConfiguration(
-      markerIcon: widget.markerIcon,
-      markerIconOffset: widget.markerIconOffset ?? 50.0,
-      animateMarker: widget.animateMarker ?? true,
-      markerAnimationDuration: widget.markerAnimationDuration ?? const Duration(milliseconds: 200),
-    );
+          markerIcon: widget.markerIcon,
+          markerIconOffset: widget.markerIconOffset,
+          animateMarker: widget.animateMarker,
+          markerAnimationDuration: widget.markerAnimationDuration,
+        ) ??
+        MarkerConfiguration(
+          markerIcon: widget.markerIcon,
+          markerIconOffset: widget.markerIconOffset ?? 50.0,
+          animateMarker: widget.animateMarker ?? true,
+          markerAnimationDuration: widget.markerAnimationDuration ??
+              const Duration(milliseconds: 200),
+        );
 
     // Resolve SelectButtonConfiguration
     _selectButtonConfig = widget.selectButtonConfiguration?.copyWith(
-      showSelectLocationButton: widget.showSelectLocationButton,
-      selectLocationButtonText: widget.selectLocationButtonText,
-      selectLocationButtonLeadingIcon: widget.selectLocationButtonLeadingIcon,
-      selectLocationButtonStyle: widget.selectLocationButtonStyle,
-      selectLocationButtonWidth: widget.selectLocationButtonWidth,
-      selectLocationButtonHeight: widget.selectLocationButtonHeight,
-      selectedLocationButtonTextStyle: widget.selectedLocationButtonTextStyle,
-      selectLocationButtonPositionTop: widget.selectLocationButtonPositionTop,
-      selectLocationButtonPositionRight: widget.selectLocationButtonPositionRight,
-      selectLocationButtonPositionLeft: widget.selectLocationButtonPositionLeft,
-      selectLocationButtonPositionBottom: widget.selectLocationButtonPositionBottom,
-    ) ?? SelectButtonConfiguration(
-      showSelectLocationButton: widget.showSelectLocationButton ?? true,
-      selectLocationButtonText: widget.selectLocationButtonText ?? 'Set Current Location',
-      selectLocationButtonLeadingIcon: widget.selectLocationButtonLeadingIcon,
-      selectLocationButtonStyle: widget.selectLocationButtonStyle,
-      selectLocationButtonWidth: widget.selectLocationButtonWidth,
-      selectLocationButtonHeight: widget.selectLocationButtonHeight,
-      selectedLocationButtonTextStyle: widget.selectedLocationButtonTextStyle ?? const TextStyle(fontSize: 20),
-      selectLocationButtonPositionTop: widget.selectLocationButtonPositionTop,
-      selectLocationButtonPositionRight: widget.selectLocationButtonPositionRight ?? 0,
-      selectLocationButtonPositionLeft: widget.selectLocationButtonPositionLeft ?? 0,
-      selectLocationButtonPositionBottom: widget.selectLocationButtonPositionBottom ?? 3,
-    );
+          showSelectLocationButton: widget.showSelectLocationButton,
+          selectLocationButtonText: widget.selectLocationButtonText,
+          selectLocationButtonLeadingIcon:
+              widget.selectLocationButtonLeadingIcon,
+          selectLocationButtonStyle: widget.selectLocationButtonStyle,
+          selectLocationButtonWidth: widget.selectLocationButtonWidth,
+          selectLocationButtonHeight: widget.selectLocationButtonHeight,
+          selectedLocationButtonTextStyle:
+              widget.selectedLocationButtonTextStyle,
+          selectLocationButtonPositionTop:
+              widget.selectLocationButtonPositionTop,
+          selectLocationButtonPositionRight:
+              widget.selectLocationButtonPositionRight,
+          selectLocationButtonPositionLeft:
+              widget.selectLocationButtonPositionLeft,
+          selectLocationButtonPositionBottom:
+              widget.selectLocationButtonPositionBottom,
+        ) ??
+        SelectButtonConfiguration(
+          showSelectLocationButton: widget.showSelectLocationButton ?? true,
+          selectLocationButtonText:
+              widget.selectLocationButtonText ?? 'Set Current Location',
+          selectLocationButtonLeadingIcon:
+              widget.selectLocationButtonLeadingIcon,
+          selectLocationButtonStyle: widget.selectLocationButtonStyle,
+          selectLocationButtonWidth: widget.selectLocationButtonWidth,
+          selectLocationButtonHeight: widget.selectLocationButtonHeight,
+          selectedLocationButtonTextStyle:
+              widget.selectedLocationButtonTextStyle ??
+                  const TextStyle(fontSize: 20),
+          selectLocationButtonPositionTop:
+              widget.selectLocationButtonPositionTop,
+          selectLocationButtonPositionRight:
+              widget.selectLocationButtonPositionRight ?? 0,
+          selectLocationButtonPositionLeft:
+              widget.selectLocationButtonPositionLeft ?? 0,
+          selectLocationButtonPositionBottom:
+              widget.selectLocationButtonPositionBottom ?? 3,
+        );
 
     // Resolve AttributionConfiguration
     _attributionConfig = widget.attributionConfiguration?.copyWith(
-      showContributorBadgeForOSM: widget.showContributorBadgeForOSM,
-      contributorBadgeForOSMColor: widget.contributorBadgeForOSMColor,
-      contributorBadgeForOSMTextColor: widget.contributorBadgeForOSMTextColor,
-      contributorBadgeForOSMText: widget.contributorBadgeForOSMText,
-      contributorBadgeForOSMPositionTop: widget.contributorBadgeForOSMPositionTop,
-      contributorBadgeForOSMPositionLeft: widget.contributorBadgeForOSMPositionLeft,
-      contributorBadgeForOSMPositionRight: widget.contributorBadgeForOSMPositionRight,
-      contributorBadgeForOSMPositionBottom: widget.contributorBadgeForOSMPositionBottom,
-    ) ?? AttributionConfiguration(
-      showContributorBadgeForOSM: widget.showContributorBadgeForOSM ?? false,
-      contributorBadgeForOSMColor: widget.contributorBadgeForOSMColor,
-      contributorBadgeForOSMTextColor: widget.contributorBadgeForOSMTextColor ?? Colors.blue,
-      contributorBadgeForOSMText: widget.contributorBadgeForOSMText ?? 'OpenStreetMap contributors',
-      contributorBadgeForOSMPositionTop: widget.contributorBadgeForOSMPositionTop,
-      contributorBadgeForOSMPositionLeft: widget.contributorBadgeForOSMPositionLeft,
-      contributorBadgeForOSMPositionRight: widget.contributorBadgeForOSMPositionRight ?? 0,
-      contributorBadgeForOSMPositionBottom: widget.contributorBadgeForOSMPositionBottom ?? -6,
-    );
+          showContributorBadgeForOSM: widget.showContributorBadgeForOSM,
+          contributorBadgeForOSMColor: widget.contributorBadgeForOSMColor,
+          contributorBadgeForOSMTextColor:
+              widget.contributorBadgeForOSMTextColor,
+          contributorBadgeForOSMText: widget.contributorBadgeForOSMText,
+          contributorBadgeForOSMPositionTop:
+              widget.contributorBadgeForOSMPositionTop,
+          contributorBadgeForOSMPositionLeft:
+              widget.contributorBadgeForOSMPositionLeft,
+          contributorBadgeForOSMPositionRight:
+              widget.contributorBadgeForOSMPositionRight,
+          contributorBadgeForOSMPositionBottom:
+              widget.contributorBadgeForOSMPositionBottom,
+        ) ??
+        AttributionConfiguration(
+          showContributorBadgeForOSM:
+              widget.showContributorBadgeForOSM ?? false,
+          contributorBadgeForOSMColor: widget.contributorBadgeForOSMColor,
+          contributorBadgeForOSMTextColor:
+              widget.contributorBadgeForOSMTextColor ?? Colors.blue,
+          contributorBadgeForOSMText:
+              widget.contributorBadgeForOSMText ?? 'OpenStreetMap contributors',
+          contributorBadgeForOSMPositionTop:
+              widget.contributorBadgeForOSMPositionTop,
+          contributorBadgeForOSMPositionLeft:
+              widget.contributorBadgeForOSMPositionLeft,
+          contributorBadgeForOSMPositionRight:
+              widget.contributorBadgeForOSMPositionRight ?? 0,
+          contributorBadgeForOSMPositionBottom:
+              widget.contributorBadgeForOSMPositionBottom ?? -6,
+        );
   }
 
   /// Initializes controllers and focus nodes
@@ -832,7 +868,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     );
 
     _searchDebouncer = Debouncer(
-      delay: _searchConfig.searchbarDebounceDuration ?? const Duration(milliseconds: 500),
+      delay: _searchConfig.searchbarDebounceDuration ??
+          const Duration(milliseconds: 500),
     );
 
     _onError = widget.onError ?? (e) => debugPrint(e.toString());
@@ -978,7 +1015,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   /// Handles search result selection
   void _handleSearchResultTap(OSMdata selectedLocation) {
-    final center = LatLong(selectedLocation.latitude, selectedLocation.longitude);
+    final center =
+        LatLong(selectedLocation.latitude, selectedLocation.longitude);
     _animateToLocation(center.toLatLng(), 18.0);
     _handleLocationChanged(
       center,
@@ -1048,7 +1086,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
           child: ListTile(
             leading: Icon(
               _searchConfig.searchResultIcon,
-              color: _searchConfig.searchResultIconColor ?? _searchConfig.searchBarTextColor,
+              color: _searchConfig.searchResultIconColor ??
+                  _searchConfig.searchBarTextColor,
             ),
             title: Text(
               _searchOptions[index].displayname,
@@ -1072,7 +1111,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         );
     final inputFocusBorder = _searchConfig.searchbarInputFocusBorder ??
         OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 3.0),
+          borderSide:
+              BorderSide(color: Theme.of(context).primaryColor, width: 3.0),
         );
 
     return Positioned(
@@ -1085,7 +1125,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
         decoration: BoxDecoration(
           color: _searchConfig.searchBarBackgroundColor ??
               Theme.of(context).colorScheme.surface,
-          borderRadius: _searchConfig.searchbarBorderRadius ?? BorderRadius.circular(5),
+          borderRadius:
+              _searchConfig.searchbarBorderRadius ?? BorderRadius.circular(5),
         ),
         child: Column(
           children: [
@@ -1157,8 +1198,7 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               ),
               SizedBox(height: _controlsConfig.controlButtonsSpacing + 6),
             ],
-            if (_controlsConfig.showLocationController)
-              _buildLocationButton(),
+            if (_controlsConfig.showLocationController) _buildLocationButton(),
           ],
         ),
       ),
@@ -1175,7 +1215,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       height: _controlsConfig.zoomButtonsSize,
       child: FloatingActionButton(
         heroTag: heroTag,
-        elevation: _controlsConfig.showButtonShadow ? _controlsConfig.buttonElevation : 0,
+        elevation: _controlsConfig.showButtonShadow
+            ? _controlsConfig.buttonElevation
+            : 0,
         shape: _controlsConfig.buttonShape ?? const CircleBorder(),
         backgroundColor: _controlsConfig.zoomButtonsBackgroundColor,
         onPressed: onPressed,
@@ -1193,7 +1235,9 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
       height: _controlsConfig.locationButtonSize,
       child: FloatingActionButton(
         heroTag: "location",
-        elevation: _controlsConfig.showButtonShadow ? _controlsConfig.buttonElevation : 0,
+        elevation: _controlsConfig.showButtonShadow
+            ? _controlsConfig.buttonElevation
+            : 0,
         shape: _controlsConfig.buttonShape ?? const CircleBorder(),
         backgroundColor: _controlsConfig.locationButtonBackgroundColor,
         onPressed: _handleLocationButtonPress,
@@ -1209,14 +1253,16 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     return Positioned.fill(
       child: FlutterMap(
         options: MapOptions(
-          initialCenter: widget.initPosition?.toLatLng() ?? _currentPosition.toLatLng(),
+          initialCenter:
+              widget.initPosition?.toLatLng() ?? _currentPosition.toLatLng(),
           initialZoom: _mapConfig.initZoom,
           maxZoom: _mapConfig.maxZoomLevel,
           minZoom: _mapConfig.minZoomLevel,
           cameraConstraint: (_mapConfig.maxBounds != null
               ? CameraConstraint.contain(bounds: _mapConfig.maxBounds!)
               : const CameraConstraint.unconstrained()),
-          backgroundColor: _mapConfig.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
+          backgroundColor:
+              _mapConfig.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
           keepAlive: true,
           onTap: widget.onMapTap != null
               ? (tapPosition, point) => widget.onMapTap!(point)
@@ -1228,7 +1274,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             urlTemplate: _mapConfig.urlTemplate,
             subdomains: const ['a', 'b', 'c'],
             userAgentPackageName: widget.userAgent,
-            tileProvider: _mapConfig.customTileProvider ?? CancellableNetworkTileProvider(),
+            tileProvider: _mapConfig.customTileProvider ??
+                CancellableNetworkTileProvider(),
             additionalOptions: _mapConfig.tileRequestHeaders ?? {},
           ),
           if (widget.showCurrentLocationPointer) _buildCurrentLocation(),
@@ -1249,11 +1296,12 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   }
 
   Widget _buildMarker() {
-    final markerWidget = _markerConfig.markerIcon ?? Icon(
-      _markerConfig.defaultMarkerIcon,
-      color: _markerConfig.defaultMarkerColor,
-      size: _markerConfig.defaultMarkerSize,
-    );
+    final markerWidget = _markerConfig.markerIcon ??
+        Icon(
+          _markerConfig.defaultMarkerIcon,
+          color: _markerConfig.defaultMarkerColor,
+          size: _markerConfig.defaultMarkerSize,
+        );
 
     Widget marker = markerWidget;
 
@@ -1329,12 +1377,14 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
               if (_attributionConfig.showContributorBadgeForOSM) ...[
                 Positioned(
                   top: _attributionConfig.contributorBadgeForOSMPositionTop,
-                  bottom: _attributionConfig.contributorBadgeForOSMPositionBottom,
+                  bottom:
+                      _attributionConfig.contributorBadgeForOSMPositionBottom,
                   left: _attributionConfig.contributorBadgeForOSMPositionLeft,
                   right: _attributionConfig.contributorBadgeForOSMPositionRight,
                   child: CopyrightOSMWidget(
                     badgeText: _attributionConfig.contributorBadgeForOSMText,
-                    badgeTextColor: _attributionConfig.contributorBadgeForOSMTextColor,
+                    badgeTextColor:
+                        _attributionConfig.contributorBadgeForOSMTextColor,
                     badgeColor: _attributionConfig.contributorBadgeForOSMColor,
                   ),
                 ),

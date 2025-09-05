@@ -40,7 +40,10 @@ class OSMdata {
   /// * Latitude: -90.0 to 90.0 degrees
   /// * Longitude: -180.0 to 180.0 degrees
   bool get isValidCoordinates =>
-      latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180;
 
   /// Returns a string representation of the OSM data
   ///
@@ -57,9 +60,9 @@ class OSMdata {
     if (identical(this, other)) return true;
     if (other.runtimeType != runtimeType) return false;
     return other is OSMdata &&
-           other.displayname == displayname &&
-           other.latitude == latitude &&
-           other.longitude == longitude;
+        other.displayname == displayname &&
+        other.latitude == latitude &&
+        other.longitude == longitude;
   }
 
   /// Generates a hash code for this instance
@@ -95,10 +98,10 @@ class OSMdata {
   /// * 'lat': Latitude as string
   /// * 'lon': Longitude as string
   Map<String, dynamic> toJson() => {
-    'display_name': displayname,
-    'lat': latitude.toString(),
-    'lon': longitude.toString(),
-  };
+        'display_name': displayname,
+        'lat': latitude.toString(),
+        'lon': longitude.toString(),
+      };
 }
 
 /// Represents a latitude-longitude coordinate pair with utility methods
@@ -150,7 +153,10 @@ class LatLong {
   /// print(invalidCoord.isValid); // false
   /// ```
   bool get isValid =>
-      latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180;
 
   /// Converts this LatLong to a LatLng object for flutter_map compatibility
   ///
@@ -173,7 +179,8 @@ class LatLong {
   /// final mapCoord = LatLng(40.7128, -74.0060);
   /// final coord = LatLong.fromLatLng(mapCoord);
   /// ```
-  factory LatLong.fromLatLng(LatLng latLng) => LatLong(latLng.latitude, latLng.longitude);
+  factory LatLong.fromLatLng(LatLng latLng) =>
+      LatLong(latLng.latitude, latLng.longitude);
 
   /// Returns a string representation of the coordinates
   ///
@@ -189,8 +196,8 @@ class LatLong {
     if (identical(this, other)) return true;
     if (other.runtimeType != runtimeType) return false;
     return other is LatLong &&
-           other.latitude == latitude &&
-           other.longitude == longitude;
+        other.latitude == latitude &&
+        other.longitude == longitude;
   }
 
   /// Generates a hash code for this coordinate pair
@@ -309,7 +316,8 @@ class PickedData {
     }
 
     // Add settlement (city, town, or village)
-    final city = addressData['city'] ?? addressData['town'] ?? addressData['village'];
+    final city =
+        addressData['city'] ?? addressData['town'] ?? addressData['village'];
     if (city != null) components.add(city);
 
     // Add country
@@ -333,8 +341,8 @@ class PickedData {
     if (identical(this, other)) return true;
     if (other.runtimeType != runtimeType) return false;
     return other is PickedData &&
-           other.latLong == latLong &&
-           other.address == address;
+        other.latLong == latLong &&
+        other.address == address;
   }
 
   /// Generates a hash code for this instance
