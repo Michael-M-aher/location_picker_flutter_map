@@ -1273,8 +1273,8 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
             urlTemplate: _mapConfig.urlTemplate,
             subdomains: const ['a', 'b', 'c'],
             userAgentPackageName: widget.userAgent,
-            tileProvider: _mapConfig.customTileProvider ??
-                NetworkTileProvider(),
+            tileProvider:
+                _mapConfig.customTileProvider ?? NetworkTileProvider(),
             additionalOptions: _mapConfig.tileRequestHeaders ?? {},
           ),
           if (widget.showCurrentLocationPointer) _buildCurrentLocation(),
