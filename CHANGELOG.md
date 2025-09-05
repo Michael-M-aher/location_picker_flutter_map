@@ -1,3 +1,8 @@
+## 4.1.0
+* **UPDATE**: Removed deprecated `flutter_map_cancellable_tile_provider` package and replaced it with built-in `NetworkTileProvider` from `flutter_map`
+* **FIXED**: Resolved minor bugs and improved overall stability
+
+
 ## 4.0.0
 
 * **MAJOR REFACTORING**: Complete code architecture overhaul with clean code practices

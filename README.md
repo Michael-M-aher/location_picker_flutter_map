@@ -222,7 +222,7 @@ To use the Geolocator plugin on Windows you need to be using Flutter 2.10 or hig
 Add the following to your `pubspec.yaml` file:
 
     dependencies:
-      location_picker_flutter_map: ^4.0.0
+      location_picker_flutter_map: ^4.1.0
 
 ## 🚀 Getting Started
 
