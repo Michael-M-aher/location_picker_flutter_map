@@ -1,4 +1,4 @@
-library location_picker_flutter_map;
+library;
 
 export 'src/classes.dart';
 export 'src/configuration.dart';
