@@ -1,318 +1,630 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
 
 import 'classes.dart';
+import 'configuration.dart';
+import 'services/location_service.dart';
+import 'services/geocoding_service.dart';
+import 'services/permission_service.dart';
+import 'services/debouncer.dart';
 import 'widgets/copyright_osm_widget.dart';
 import 'widgets/wide_button.dart';
 
-/// Principal widget to show Flutter map using osm api with pick up location marker and search bar.
-/// you can track you current location, search for a location and select it.
-/// navigate easily in the map to selecte location.
-
+/// A comprehensive Flutter widget for interactive location picking using OpenStreetMap
+///
+/// FlutterLocationPicker provides a feature-rich map interface with location search,
+/// current location tracking, and highly customizable UI elements. It integrates
+/// seamlessly with OpenStreetMap and Nominatim for geocoding services.
+///
+/// ## Key Features:
+/// * **Interactive Map**: Pan, zoom, and tap to select locations
+/// * **Location Search**: Real-time search with autocomplete suggestions
+/// * **Current Location**: GPS-based location tracking with permissions handling
+/// * **Geocoding**: Reverse geocoding to get addresses from coordinates
+/// * **Customizable UI**: Extensive styling options for all components
+/// * **RTL Support**: Right-to-left language support
+/// * **Responsive Design**: Adapts to different screen sizes
+///
+/// ## Basic Usage:
+/// ```dart
+/// FlutterLocationPicker(
+///   userAgent: 'com.example.myapp',
+///   onPicked: (PickedData pickedData) {
+///     print('Selected location: ${pickedData.address}');
+///     print('Coordinates: ${pickedData.latLong}');
+///   },
+/// )
+/// ```
+///
+/// ## Advanced Usage with Configuration Classes:
+/// ```dart
+/// FlutterLocationPicker.withConfiguration(
+///   userAgent: 'com.example.myapp',
+///   onPicked: (pickedData) => handleLocationPicked(pickedData),
+///   mapConfiguration: MapConfiguration(
+///     initZoom: 15,
+///     stepZoom: 2,
+///     mapLanguage: 'es',
+///   ),
+///   searchConfiguration: SearchConfiguration(
+///     maxSearchResults: 8,
+///     searchBarHintText: 'Buscar ubicación...',
+///   ),
+///   controlsConfiguration: ControlsConfiguration(
+///     zoomInIcon: Icons.add,
+///     zoomOutIcon: Icons.remove,
+///     zoomButtonsColor: Colors.white,
+///     zoomButtonsBackgroundColor: Colors.green,
+///     buttonElevation: 8.0,
+///   ),
+/// )
+/// ```
 class FlutterLocationPicker extends StatefulWidget {
-  /// [onPicked] : (callback) is trigger when you clicked on select location,return current [PickedData] of the Marker
+  // Core Callbacks
+
+  /// **REQUIRED** - Callback triggered when user confirms location selection
   ///
+  /// This is called when the user taps the "Select Location" button.
+  /// Use this to handle the final location choice.
+  ///
+  /// Example:
+  /// ```dart
+  /// onPicked: (PickedData pickedData) {
+  ///   Navigator.pop(context, pickedData.latLong);
+  ///   // Or save to database, send to API, etc.
+  /// }
+  /// ```
   final void Function(PickedData pickedData) onPicked;
 
-  /// [onChanged] : (callback) is trigger when you change marker location on map,return current [PickedData] of the Marker
+  /// **OPTIONAL** - Callback triggered when marker location changes on map
   ///
+  /// Called whenever the user moves the map and the center location changes.
+  /// Useful for real-time location updates or preview functionality.
+  ///
+  /// Example:
+  /// ```dart
+  /// onChanged: (PickedData pickedData) {
+  ///   setState(() {
+  ///     currentAddress = pickedData.address;
+  ///   });
+  /// }
+  /// ```
   final void Function(PickedData pickedData)? onChanged;
 
-  /// [onError] : (callback) is trigger when an error occurs while fetching location
+  /// **OPTIONAL** - Callback triggered when an error occurs
   ///
+  /// Handle various errors like network issues, permission denials,
+  /// or geocoding failures. If not provided, errors are logged to console.
+  ///
+  /// Example:
+  /// ```dart
+  /// onError: (Exception e) {
+  ///   ScaffoldMessenger.of(context).showSnackBar(
+  ///     SnackBar(content: Text('Error: ${e.toString()}')),
+  ///   );
+  /// }
+  /// ```
   final void Function(Exception e)? onError;
 
-  /// [initPosition] :(LatLong?) set the initial location of the pointer on the map
-  ///
-  final LatLong? initPosition;
+  // Core Configuration
 
-  /// [urlTemplate] : (String) set the url template of the tile layer to get the data from the api (makes you apply your own style to the map) (default = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png')
+  /// **REQUIRED** - User agent string for API requests
   ///
-  final String urlTemplate;
-
-  /// [mapLanguage] : (String) set the language of the map and address text (default = 'en')
+  /// Required by Nominatim API to avoid rate limiting. Should include
+  /// your app name and contact information.
   ///
-  final String mapLanguage;
-
-  /// [nominatimHost] : (String) nominatim instance to use (default = 'nominatim.openstreetmap.org')
+  /// Format: 'AppName/Version (contact@example.com)'
   ///
-  final String nominatimHost;
-
-  /// [userAgent] : (String) set the user agent package name to use in nominatim requests (example: 'com.example.app')
-  /// This is required for nominatim requests, otherwise rate limits are applied to your requests
+  /// Example:
+  /// ```dart
+  /// userAgent: 'MyLocationApp/1.2.0 (developer@mycompany.com)',
+  /// ```
   final String userAgent;
 
-  /// [nominatimAdditionalQueryParameters] : (Map<String,dynamic>) additional parameters to add to the nominatim query. Can also be used to override existing parameters (example: {'extratags': '1'}) (default = null)
+  /// **OPTIONAL** - Initial position of the map center and marker
   ///
-  final Map<String, dynamic>? nominatimAdditionalQueryParameters;
+  /// If not provided, defaults to a preset location (Cairo, Egypt).
+  /// When [trackMyPosition] is true, this is overridden by user's location.
+  ///
+  /// Example:
+  /// ```dart
+  /// initPosition: LatLong(40.7128, -74.0060), // New York City
+  /// ```
+  final LatLong? initPosition;
 
-  /// [nominatimZoomLevel] : (int?) zoom level to use in nominatim requests. If set to null will use zoom level corresponding to current map zoom level (example: 18) (default = null)
+  /// **OPTIONAL** - Automatically track user's current location on startup
   ///
-  final int? nominatimZoomLevel;
-
-  /// [countryFilter] : (String) set the list of country codes to filter search results to them (example: 'eg,us') (default = null)
+  /// When true, requests location permission and moves map to user's position.
+  /// Overrides [initPosition] if user grants permission.
+  /// **Default**: false
   ///
-  final String? countryFilter;
-
-  /// [selectLocationButtonText] : (String) set the text of the select location button (default = 'Set Current Location')
-  ///
-  final String selectLocationButtonText;
-
-  /// [selectLocationButtonLeadingIcon] : (Widget) set the leading icon of the select location button
-  ///
-  final Widget? selectLocationButtonLeadingIcon;
-
-  /// [initZoom] : (double) set initialized zoom in specific location  (default = 17)
-  ///
-  final double initZoom;
-
-  /// [stepZoom] : (double) set default step zoom value (default = 1)
-  ///
-  final double stepZoom;
-
-  /// [minZoomLevel] : (double) set default zoom value (default = 2)
-  ///
-  final double minZoomLevel;
-
-  /// [maxZoomLevel] : (double) set default zoom value (default = 18.4)
-  ///
-  final double maxZoomLevel;
-
-  /// [maxBounds] : (LatLngBounds?) set default max bounds of the map (default = null)
-  ///
-  final LatLngBounds? maxBounds;
-
-  /// [loadingWidget] : (Widget) show custom  widget until the map finish initialization
-  ///
-  final Widget? loadingWidget;
-
-  /// [trackMyPosition] : (bool) if is true, map will track your your location on the map initialization and makes inittial position of the pointer your current location (default = false)
-  ///
+  /// Example:
+  /// ```dart
+  /// trackMyPosition: true, // Auto-locate user
+  /// ```
   final bool trackMyPosition;
 
-  /// [showCurrentLocationPointer] : (bool) if is true, your current location will be shown on the map (default = true)
+  /// **OPTIONAL** - Show blue dot indicating user's current location
   ///
+  /// Displays a location marker that tracks the user's position in real-time.
+  /// **Default**: true
   final bool showCurrentLocationPointer;
 
-  /// [showZoomController] : (bool) enable/disable zoom in and zoom out buttons (default = true)
-  ///
-  final bool showZoomController;
+  // Nominatim Configuration
 
-  /// [showLocationController] : (bool) enable/disable locate me button (default = true)
+  /// **OPTIONAL** - Custom Nominatim server hostname
   ///
-  final bool showLocationController;
-
-  /// [showSelectLocationButton] : (bool) enable/disable select location button (default = true)
+  /// Use a custom Nominatim instance for geocoding services.
+  /// Useful for private deployments or alternative providers.
   ///
-  final bool showSelectLocationButton;
-
-  /// [mapAnimationDuration] : (Duration) time duration of the move from point to point animation (default = Duration(milliseconds: 2000))
+  /// **Default**: 'nominatim.openstreetmap.org'
   ///
-  final Duration mapAnimationDuration;
+  /// Example:
+  /// ```dart
+  /// nominatimHost: 'my-nominatim-server.com',
+  /// ```
+  final String nominatimHost;
 
-  /// [mapLoadingBackgroundColor] : (Color) change the background color of the loading screen before the map initialized
+  /// **OPTIONAL** - Additional query parameters for Nominatim requests
   ///
-  final Color? mapLoadingBackgroundColor;
-
-  /// [selectLocationButtonStyle] : (ButtonStyle) change the style of the select Location button
+  /// Add custom parameters or override defaults for geocoding requests.
+  /// Useful for fine-tuning search behavior.
   ///
-  final ButtonStyle? selectLocationButtonStyle;
+  /// Example:
+  /// ```dart
+  /// nominatimAdditionalQueryParameters: {
+  ///   'extratags': '1',        // Include additional tags
+  ///   'namedetails': '1',      // Include name variants
+  ///   'polygon_geojson': '1',  // Include polygon data
+  /// }
+  /// ```
+  final Map<String, dynamic>? nominatimAdditionalQueryParameters;
 
-  /// [selectLocationButtonWidth] : (double) change the width of the select Location button
+  /// **OPTIONAL** - Zoom level for geocoding precision
   ///
-  final double? selectLocationButtonWidth;
-
-  /// [selectLocationButtonHeight] : (double) change the height of the select Location button
+  /// Higher values provide more precise address details.
+  /// If null, uses the current map zoom level.
   ///
-  final double? selectLocationButtonHeight;
-
-  /// [selectedLocationButtonTextStyle] : set the style of the button text (default = TextStyle(fontSize: 20))
+  /// Range: 1-18 (1 = country level, 18 = building level)
+  /// **Default**: null (auto-adjust to map zoom)
   ///
-  final TextStyle selectedLocationButtonTextStyle;
+  /// Example:
+  /// ```dart
+  /// nominatimZoomLevel: 18, // Building-level precision
+  /// ```
+  final int? nominatimZoomLevel;
 
-  /// [selectLocationButtonPositionTop] : (double) change the top position of the select Location button (default = null)
+  /// **OPTIONAL** - Country codes to limit search results
   ///
-  final double? selectLocationButtonPositionTop;
-
-  /// [selectLocationButtonPositionRight] : (double) change the right position of the select Location button (default = 0)
+  /// Restrict location search to specific countries using ISO 3166-1 alpha-2 codes.
+  /// Use comma-separated values for multiple countries.
   ///
-  final double? selectLocationButtonPositionRight;
+  /// Example:
+  /// ```dart
+  /// countryFilter: 'us,ca,mx', // North America only
+  /// ```
+  final String? countryFilter;
 
-  /// [selectLocationButtonPositionLeft] : (double) change the left position of the select Location button (default = 0)
+  // Configuration Classes
+
+  /// **OPTIONAL** - Map configuration settings
+  final MapConfiguration? mapConfiguration;
+
+  /// **OPTIONAL** - Search functionality configuration
+  final SearchConfiguration? searchConfiguration;
+
+  /// **OPTIONAL** - Control buttons configuration
+  final ControlsConfiguration? controlsConfiguration;
+
+  /// **OPTIONAL** - Location marker configuration
+  final MarkerConfiguration? markerConfiguration;
+
+  /// **OPTIONAL** - Select button configuration
+  final SelectButtonConfiguration? selectButtonConfiguration;
+
+  /// **OPTIONAL** - Attribution configuration
+  final AttributionConfiguration? attributionConfiguration;
+
+  // Advanced Customization
+
+  /// **OPTIONAL** - Custom widget displayed while loading
   ///
-  final double? selectLocationButtonPositionLeft;
-
-  /// [selectLocationButtonPositionBottom] : (double) change the bottom position of the select Location button (default = 3)
+  /// **Default**: CircularProgressIndicator()
   ///
-  final double? selectLocationButtonPositionBottom;
+  /// Example:
+  /// ```dart
+  /// loadingWidget: Column(
+  ///   mainAxisAlignment: MainAxisAlignment.center,
+  ///   children: [
+  ///     CircularProgressIndicator(color: Colors.blue),
+  ///     SizedBox(height: 16),
+  ///     Text('Loading map...', style: TextStyle(fontSize: 16)),
+  ///   ],
+  /// ),
+  /// ```
+  final Widget? loadingWidget;
 
-  /// [showSearchBar] : (bool) enable/disable search bar (default = true)
+  /// **OPTIONAL** - Additional map layers to display
   ///
-  final bool showSearchBar;
-
-  /// [searchBarBackgroundColor] : (Color) change the background color of the search bar
+  /// Add custom overlays, polygons, polylines, etc.
+  /// **Default**: Empty list
   ///
-  final Color? searchBarBackgroundColor;
-
-  /// [searchBarTextColor] : (Color) change the color of the search bar text
-  ///
-  final Color? searchBarTextColor;
-
-  /// [searchBarHintText] : (String) change the hint text of the search bar
-  ///
-  final String searchBarHintText;
-
-  /// [searchBarHintColor] : (Color) change the color of the search bar hint text
-  ///
-  final Color? searchBarHintColor;
-
-  /// [searchbarInputBorder] : (OutlineInputBorder) change the border of the search bar
-  ///
-  final OutlineInputBorder? searchbarInputBorder;
-
-  /// [searchbarInputFocusBorder] : (OutlineInputBorder) change the border of the search bar when focused
-  ///
-  final OutlineInputBorder? searchbarInputFocusBorderp;
-
-  /// [searchbarBorderRadius] : (BorderRadiusGeometry) change the border radius of the search bar
-  ///
-  final BorderRadiusGeometry? searchbarBorderRadius;
-
-  /// [searchbarDebounceDuration] : (Duration) change the duration of search debounce
-  ///
-  final Duration? searchbarDebounceDuration;
-
-  /// [zoomButtonsColor] : (Color) change the color of the zoom buttons icons
-  ///
-  final Color? zoomButtonsColor;
-
-  /// [zoomButtonsBackgroundColor] : (Color) change the background color of the zoom buttons
-  ///
-  final Color? zoomButtonsBackgroundColor;
-
-  /// [locationButtonsColor] : (Color) change the color of the location button icon
-  ///
-  final Color? locationButtonsColor;
-
-  /// [locationButtonBackgroundColor] : (Color) change the background color of the location button
-  ///
-  final Color? locationButtonBackgroundColor;
-
-  /// [markerIcon] : (IconData) change the marker icon of the map (default = Icon(icons.location_on, color: Colors.blue, size: 50))
-  ///
-  final Widget? markerIcon;
-
-  /// [markerIconOffset] : (double) change the marker icon offset in y direction (default = 50.0)
-  ///
-  final double markerIconOffset;
-
-  /// [showContributorBadgeForOSM] : (bool) for copyright of osm, we need to add badge in bottom of the map (default false)
-  ///
-  final bool showContributorBadgeForOSM;
-
-  /// [contributorBadgeForOSMColor] : (Color) change the color of the badge (default Colors.grey[300])
-  ///
-  final Color? contributorBadgeForOSMColor;
-
-  /// [contributorBadgeForOSMTextColor] : (Color) change the color of the badge text (default Colors.blue)
-  ///
-  final Color contributorBadgeForOSMTextColor;
-
-  /// [contributorBadgeForOSMText] : (String) change the text of the badge (default 'OpenStreetMap contributors')
-  ///
-  final String contributorBadgeForOSMText;
-
-  // [contributorBadgeForOSMPositionTop] : (double) change the position of the badge from top (default 0)
-  ///
-  final double? contributorBadgeForOSMPositionTop;
-
-  /// [contributorBadgeForOSMPositionLeft] : (double) change the position of the badge from left (default null)
-  ///
-  final double? contributorBadgeForOSMPositionLeft;
-
-  /// [contributorBadgeForOSMPositionRight] : (double) change the position of the badge from right (default 0)
-  ///
-  final double? contributorBadgeForOSMPositionRight;
-
-  /// [contributorBadgeForOSMPositionBottom] : (double) change the position of the badge from bottom (default -6)
-  ///
-  final double? contributorBadgeForOSMPositionBottom;
-
-  /// [mapLayers] : (List<Widget>) add custom layers to the map (default [])
-  ///  example: [PolylineLayerWidget(polyline: Polyline(points: points, color: Colors.red))]
+  /// Example:
+  /// ```dart
+  /// mapLayers: [
+  ///   PolylineLayer(
+  ///     polylines: [
+  ///       Polyline(
+  ///         points: routePoints,
+  ///         color: Colors.red,
+  ///         strokeWidth: 4.0,
+  ///       ),
+  ///     ],
+  ///   ),
+  ///   CircleLayer(
+  ///     circles: [
+  ///       CircleMarker(
+  ///         point: centerPoint,
+  ///         radius: 100,
+  ///         color: Colors.blue.withOpacity(0.3),
+  ///       ),
+  ///     ],
+  ///   ),
+  /// ],
+  /// ```
   final List<Widget> mapLayers;
 
+  /// **OPTIONAL** - Callback for custom map interaction handling
+  ///
+  /// Called when user taps on the map
+  ///
+  /// Example:
+  /// ```dart
+  /// onMapTap: (LatLng position) {
+  ///   print('Map tapped at: ${position.latitude}, ${position.longitude}');
+  /// },
+  /// ```
+  final void Function(LatLng position)? onMapTap;
+
+  /// **OPTIONAL** - Callback for map ready event
+  ///
+  /// Called when map finishes initial loading
+  ///
+  /// Example:
+  /// ```dart
+  /// onMapReady: () {
+  ///   print('Map is ready for interaction');
+  /// },
+  /// ```
+  final VoidCallback? onMapReady;
+
+  // Legacy Parameters (for backward compatibility)
+  // These will be deprecated in future versions
+
+  /// **DEPRECATED** - Use mapConfiguration.urlTemplate instead
+  final String? urlTemplate;
+
+  /// **DEPRECATED** - Use mapConfiguration.mapLanguage instead
+  final String? mapLanguage;
+
+  /// **DEPRECATED** - Use mapConfiguration.initZoom instead
+  final double? initZoom;
+
+  /// **DEPRECATED** - Use mapConfiguration.stepZoom instead
+  final double? stepZoom;
+
+  /// **DEPRECATED** - Use mapConfiguration.minZoomLevel instead
+  final double? minZoomLevel;
+
+  /// **DEPRECATED** - Use mapConfiguration.maxZoomLevel instead
+  final double? maxZoomLevel;
+
+  /// **DEPRECATED** - Use mapConfiguration.maxBounds instead
+  final LatLngBounds? maxBounds;
+
+  /// **DEPRECATED** - Use mapConfiguration.mapAnimationDuration instead
+  final Duration? mapAnimationDuration;
+
+  /// **DEPRECATED** - Use mapConfiguration.mapLoadingBackgroundColor instead
+  final Color? mapLoadingBackgroundColor;
+
+  /// **DEPRECATED** - Use controlsConfiguration.showZoomController instead
+  final bool? showZoomController;
+
+  /// **DEPRECATED** - Use controlsConfiguration.showLocationController instead
+  final bool? showLocationController;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration.showSelectLocationButton instead
+  final bool? showSelectLocationButton;
+
+  /// **DEPRECATED** - Use searchConfiguration.showSearchBar instead
+  final bool? showSearchBar;
+
+  /// **DEPRECATED** - Use attributionConfiguration.showContributorBadgeForOSM instead
+  final bool? showContributorBadgeForOSM;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration.selectLocationButtonText instead
+  final String? selectLocationButtonText;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration.selectLocationButtonLeadingIcon instead
+  final Widget? selectLocationButtonLeadingIcon;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration.selectLocationButtonStyle instead
+  final ButtonStyle? selectLocationButtonStyle;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration.selectLocationButtonWidth instead
+  final double? selectLocationButtonWidth;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration.selectLocationButtonHeight instead
+  final double? selectLocationButtonHeight;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration.selectedLocationButtonTextStyle instead
+  final TextStyle? selectedLocationButtonTextStyle;
+
+  /// **DEPRECATED** - Use selectButtonConfiguration positioning instead
+  final double? selectLocationButtonPositionTop;
+  final double? selectLocationButtonPositionRight;
+  final double? selectLocationButtonPositionLeft;
+  final double? selectLocationButtonPositionBottom;
+
+  /// **DEPRECATED** - Use searchConfiguration properties instead
+  final Color? searchBarBackgroundColor;
+  final Color? searchBarTextColor;
+  final String? searchBarHintText;
+  final Color? searchBarHintColor;
+  final OutlineInputBorder? searchbarInputBorder;
+  final OutlineInputBorder? searchbarInputFocusBorderp;
+  final BorderRadiusGeometry? searchbarBorderRadius;
+  final Duration? searchbarDebounceDuration;
+  final int? maxSearchResults;
+
+  /// **DEPRECATED** - Use controlsConfiguration properties instead
+  final Color? zoomButtonsColor;
+  final Color? zoomButtonsBackgroundColor;
+  final Color? locationButtonsColor;
+  final Color? locationButtonBackgroundColor;
+  final double? zoomButtonsSize;
+  final double? locationButtonSize;
+  final double? controlButtonsSpacing;
+  final EdgeInsets? controlButtonsPadding;
+
+  /// **DEPRECATED** - Use markerConfiguration properties instead
+  final Widget? markerIcon;
+  final double? markerIconOffset;
+  final bool? animateMarker;
+  final Duration? markerAnimationDuration;
+
+  /// **DEPRECATED** - Use attributionConfiguration properties instead
+  final Color? contributorBadgeForOSMColor;
+  final Color? contributorBadgeForOSMTextColor;
+  final String? contributorBadgeForOSMText;
+  final double? contributorBadgeForOSMPositionTop;
+  final double? contributorBadgeForOSMPositionLeft;
+  final double? contributorBadgeForOSMPositionRight;
+  final double? contributorBadgeForOSMPositionBottom;
+
+  /// **DEPRECATED** - Use mapConfiguration properties instead
+  final TileProvider? customTileProvider;
+  final Map<String, String>? tileRequestHeaders;
+
+  /// Creates a FlutterLocationPicker with individual parameters (legacy constructor)
+  ///
+  /// **Note**: This constructor is maintained for backward compatibility.
+  /// Consider using `FlutterLocationPicker.withConfiguration()` for new projects.
   const FlutterLocationPicker({
     super.key,
+    // Required parameters
     required this.onPicked,
     required this.userAgent,
+
+    // Core configuration
     this.onChanged,
-    this.selectedLocationButtonTextStyle = const TextStyle(fontSize: 20),
     this.onError,
     this.initPosition,
-    this.stepZoom = 1,
-    this.initZoom = 17,
-    this.minZoomLevel = 2,
-    this.maxZoomLevel = 18.4,
-    this.maxBounds,
-    this.urlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    this.mapLanguage = 'en',
-    this.nominatimHost = 'nominatim.openstreetmap.org',
-    this.nominatimZoomLevel,
-    this.nominatimAdditionalQueryParameters,
-    this.countryFilter,
-    this.selectLocationButtonText = 'Set Current Location',
-    this.mapAnimationDuration = const Duration(milliseconds: 2000),
     this.trackMyPosition = false,
-    this.showZoomController = true,
-    this.showLocationController = true,
-    this.showSelectLocationButton = true,
     this.showCurrentLocationPointer = true,
+
+    // Nominatim configuration
+    this.nominatimHost = 'nominatim.openstreetmap.org',
+    this.nominatimAdditionalQueryParameters,
+    this.nominatimZoomLevel,
+    this.countryFilter,
+
+    // Configuration classes
+    this.mapConfiguration,
+    this.searchConfiguration,
+    this.controlsConfiguration,
+    this.markerConfiguration,
+    this.selectButtonConfiguration,
+    this.attributionConfiguration,
+
+    // Advanced customization
+    Widget? loadingWidget,
+    this.mapLayers = const [],
+    this.onMapTap,
+    this.onMapReady,
+
+    // Legacy parameters (deprecated)
+    this.urlTemplate,
+    this.mapLanguage,
+    this.initZoom,
+    this.stepZoom,
+    this.minZoomLevel,
+    this.maxZoomLevel,
+    this.maxBounds,
+    this.mapAnimationDuration,
+    this.mapLoadingBackgroundColor,
+    this.showZoomController,
+    this.showLocationController,
+    this.showSelectLocationButton,
+    this.showSearchBar,
+    this.showContributorBadgeForOSM,
+    this.selectLocationButtonText,
+    this.selectLocationButtonLeadingIcon,
     this.selectLocationButtonStyle,
     this.selectLocationButtonWidth,
     this.selectLocationButtonHeight,
+    this.selectedLocationButtonTextStyle,
     this.selectLocationButtonPositionTop,
-    this.selectLocationButtonPositionRight = 0,
-    this.selectLocationButtonPositionLeft = 0,
-    this.selectLocationButtonPositionBottom = 3,
-    this.showSearchBar = true,
+    this.selectLocationButtonPositionRight,
+    this.selectLocationButtonPositionLeft,
+    this.selectLocationButtonPositionBottom,
     this.searchBarBackgroundColor,
     this.searchBarTextColor,
-    this.searchBarHintText = 'Search location',
+    this.searchBarHintText,
     this.searchBarHintColor,
     this.searchbarInputBorder,
     this.searchbarInputFocusBorderp,
     this.searchbarBorderRadius,
     this.searchbarDebounceDuration,
-    this.mapLoadingBackgroundColor,
-    this.locationButtonBackgroundColor,
-    this.zoomButtonsBackgroundColor,
+    this.maxSearchResults,
     this.zoomButtonsColor,
+    this.zoomButtonsBackgroundColor,
     this.locationButtonsColor,
+    this.locationButtonBackgroundColor,
+    this.zoomButtonsSize,
+    this.locationButtonSize,
+    this.controlButtonsSpacing,
+    this.controlButtonsPadding,
     this.markerIcon,
-    this.markerIconOffset = 50.0,
-    this.showContributorBadgeForOSM = false,
+    this.markerIconOffset,
+    this.animateMarker,
+    this.markerAnimationDuration,
     this.contributorBadgeForOSMColor,
-    this.contributorBadgeForOSMTextColor = Colors.blue,
-    this.contributorBadgeForOSMText = 'OpenStreetMap contributors',
+    this.contributorBadgeForOSMTextColor,
+    this.contributorBadgeForOSMText,
     this.contributorBadgeForOSMPositionTop,
     this.contributorBadgeForOSMPositionLeft,
-    this.contributorBadgeForOSMPositionRight = 0,
-    this.contributorBadgeForOSMPositionBottom = -6,
-    this.mapLayers = const [],
-    Widget? loadingWidget,
-    this.selectLocationButtonLeadingIcon,
+    this.contributorBadgeForOSMPositionRight,
+    this.contributorBadgeForOSMPositionBottom,
+    this.customTileProvider,
+    this.tileRequestHeaders,
   }) : loadingWidget = loadingWidget ?? const CircularProgressIndicator();
+
+  /// Creates a FlutterLocationPicker using configuration classes (recommended)
+  ///
+  /// This constructor provides a cleaner, more organized way to configure
+  /// the location picker using dedicated configuration classes for each
+  /// component. This approach is recommended for new projects.
+  ///
+  /// ## Example:
+  /// ```dart
+  /// FlutterLocationPicker.withConfiguration(
+  ///   userAgent: 'MyApp/1.0',
+  ///   onPicked: (pickedData) => handleSelection(pickedData),
+  ///   mapConfiguration: MapConfiguration(
+  ///     initZoom: 15,
+  ///     stepZoom: 2,
+  ///     mapLanguage: 'es',
+  ///   ),
+  ///   controlsConfiguration: ControlsConfiguration(
+  ///     zoomInIcon: Icons.add_circle,
+  ///     zoomOutIcon: Icons.remove_circle,
+  ///     zoomButtonsColor: Colors.white,
+  ///     zoomButtonsBackgroundColor: Colors.indigo,
+  ///     buttonElevation: 8.0,
+  ///     buttonShape: RoundedRectangleBorder(
+  ///       borderRadius: BorderRadius.circular(15),
+  ///     ),
+  ///   ),
+  /// )
+  /// ```
+  const FlutterLocationPicker.withConfiguration({
+    super.key,
+    // Required parameters
+    required this.onPicked,
+    required this.userAgent,
+
+    // Core configuration
+    this.onChanged,
+    this.onError,
+    this.initPosition,
+    this.trackMyPosition = false,
+    this.showCurrentLocationPointer = true,
+
+    // Nominatim configuration
+    this.nominatimHost = 'nominatim.openstreetmap.org',
+    this.nominatimAdditionalQueryParameters,
+    this.nominatimZoomLevel,
+    this.countryFilter,
+
+    // Configuration classes
+    this.mapConfiguration,
+    this.searchConfiguration,
+    this.controlsConfiguration,
+    this.markerConfiguration,
+    this.selectButtonConfiguration,
+    this.attributionConfiguration,
+
+    // Advanced customization
+    Widget? loadingWidget,
+    this.mapLayers = const [],
+    this.onMapTap,
+    this.onMapReady,
+  }) :
+    // Set all legacy parameters to null
+    loadingWidget = loadingWidget ?? const CircularProgressIndicator(),
+    urlTemplate = null,
+    mapLanguage = null,
+    initZoom = null,
+    stepZoom = null,
+    minZoomLevel = null,
+    maxZoomLevel = null,
+    maxBounds = null,
+    mapAnimationDuration = null,
+    mapLoadingBackgroundColor = null,
+    showZoomController = null,
+    showLocationController = null,
+    showSelectLocationButton = null,
+    showSearchBar = null,
+    showContributorBadgeForOSM = null,
+    selectLocationButtonText = null,
+    selectLocationButtonLeadingIcon = null,
+    selectLocationButtonStyle = null,
+    selectLocationButtonWidth = null,
+    selectLocationButtonHeight = null,
+    selectedLocationButtonTextStyle = null,
+    selectLocationButtonPositionTop = null,
+    selectLocationButtonPositionRight = null,
+    selectLocationButtonPositionLeft = null,
+    selectLocationButtonPositionBottom = null,
+    searchBarBackgroundColor = null,
+    searchBarTextColor = null,
+    searchBarHintText = null,
+    searchBarHintColor = null,
+    searchbarInputBorder = null,
+    searchbarInputFocusBorderp = null,
+    searchbarBorderRadius = null,
+    searchbarDebounceDuration = null,
+    maxSearchResults = null,
+    zoomButtonsColor = null,
+    zoomButtonsBackgroundColor = null,
+    locationButtonsColor = null,
+    locationButtonBackgroundColor = null,
+    zoomButtonsSize = null,
+    locationButtonSize = null,
+    controlButtonsSpacing = null,
+    controlButtonsPadding = null,
+    markerIcon = null,
+    markerIconOffset = null,
+    animateMarker = null,
+    markerAnimationDuration = null,
+    contributorBadgeForOSMColor = null,
+    contributorBadgeForOSMTextColor = null,
+    contributorBadgeForOSMText = null,
+    contributorBadgeForOSMPositionTop = null,
+    contributorBadgeForOSMPositionLeft = null,
+    contributorBadgeForOSMPositionRight = null,
+    contributorBadgeForOSMPositionBottom = null,
+    customTileProvider = null,
+    tileRequestHeaders = null;
 
   @override
   State<FlutterLocationPicker> createState() => _FlutterLocationPickerState();
@@ -320,436 +632,494 @@ class FlutterLocationPicker extends StatefulWidget {
 
 class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     with TickerProviderStateMixin {
-  /// Creating a new instance of the MapController class.
-  MapController _mapController = MapController();
+  // Controllers and services
+  late final MapController _mapController;
+  late final AnimationController _animationController;
+  late final TextEditingController _searchController;
+  late final FocusNode _focusNode;
+  late final GeocodingService _geocodingService;
+  late final Debouncer _searchDebouncer;
+  late final void Function(Exception e) _onError;
 
-  // Create a animation controller that has a duration and a TickerProvider.
-  late AnimationController _animationController;
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-  List<OSMdata> _options = <OSMdata>[];
-  LatLong initPosition = const LatLong(30.0443879, 31.2357257);
-  Timer? _debounce;
-  bool isLoading = true;
-  late void Function(Exception e) onError;
+  // Resolved configuration objects
+  late final MapConfiguration _mapConfig;
+  late final SearchConfiguration _searchConfig;
+  late final ControlsConfiguration _controlsConfig;
+  late final MarkerConfiguration _markerConfig;
+  late final SelectButtonConfiguration _selectButtonConfig;
+  late final AttributionConfiguration _attributionConfig;
 
-  /// It returns true if the text is RTL, false if it's LTR
-  ///
-  /// Args:
-  ///   text (String): The text to be checked for RTL directionality.
-  ///
-  /// Returns:
-  ///   A boolean value.
-  bool isRTL(String text) {
-    return intl.Bidi.detectRtlDirectionality(text);
+  // State variables
+  List<OSMdata> _searchOptions = <OSMdata>[];
+  LatLong _currentPosition = const LatLong(30.0443879, 31.2357257);
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveConfigurations();
+    _initializeControllers();
+    _initializeServices();
+    _setupMapEventListeners();
+    _initializeLocation();
   }
 
-  Future<void> checkLocationPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  @override
+  void dispose() {
+    _disposeControllers();
+    super.dispose();
+  }
 
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Prompt user to enable location services
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Enable Location Services'),
-          content: const Text('Location services are disabled. Please enable them in your device settings.'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                await Geolocator.openLocationSettings();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Open Settings'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-          ],
-        ),
-      );
-      throw Exception('Location services are disabled.');
-    }
+  /// Resolves configuration objects by merging user-provided configs with legacy parameters
+  void _resolveConfigurations() {
+    // Resolve MapConfiguration
+    _mapConfig = widget.mapConfiguration?.copyWith(
+      urlTemplate: widget.urlTemplate,
+      mapLanguage: widget.mapLanguage,
+      initZoom: widget.initZoom,
+      stepZoom: widget.stepZoom,
+      minZoomLevel: widget.minZoomLevel,
+      maxZoomLevel: widget.maxZoomLevel,
+      maxBounds: widget.maxBounds,
+      mapAnimationDuration: widget.mapAnimationDuration,
+      mapLoadingBackgroundColor: widget.mapLoadingBackgroundColor,
+      customTileProvider: widget.customTileProvider,
+      tileRequestHeaders: widget.tileRequestHeaders,
+    ) ?? MapConfiguration(
+      urlTemplate: widget.urlTemplate ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      mapLanguage: widget.mapLanguage ?? 'en',
+      initZoom: widget.initZoom ?? 17,
+      stepZoom: widget.stepZoom ?? 1,
+      minZoomLevel: widget.minZoomLevel ?? 2,
+      maxZoomLevel: widget.maxZoomLevel ?? 18.4,
+      maxBounds: widget.maxBounds,
+      mapAnimationDuration: widget.mapAnimationDuration ?? const Duration(milliseconds: 2000),
+      mapLoadingBackgroundColor: widget.mapLoadingBackgroundColor,
+      customTileProvider: widget.customTileProvider,
+      tileRequestHeaders: widget.tileRequestHeaders,
+    );
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      // Show rationale and request permission
-      bool shouldRequest = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Location Permission'),
-          content: const Text('This app needs location access to function properly.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Allow'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Deny'),
-            ),
-          ],
-        ),
-      ) ?? false;
-      if (shouldRequest) {
-        permission = await Geolocator.requestPermission();
+    // Resolve SearchConfiguration
+    _searchConfig = widget.searchConfiguration?.copyWith(
+      showSearchBar: widget.showSearchBar,
+      searchBarBackgroundColor: widget.searchBarBackgroundColor,
+      searchBarTextColor: widget.searchBarTextColor,
+      searchBarHintText: widget.searchBarHintText,
+      searchBarHintColor: widget.searchBarHintColor,
+      searchbarInputBorder: widget.searchbarInputBorder,
+      searchbarInputFocusBorder: widget.searchbarInputFocusBorderp,
+      searchbarBorderRadius: widget.searchbarBorderRadius,
+      searchbarDebounceDuration: widget.searchbarDebounceDuration,
+      maxSearchResults: widget.maxSearchResults,
+    ) ?? SearchConfiguration(
+      showSearchBar: widget.showSearchBar ?? true,
+      searchBarBackgroundColor: widget.searchBarBackgroundColor,
+      searchBarTextColor: widget.searchBarTextColor,
+      searchBarHintText: widget.searchBarHintText ?? 'Search location',
+      searchBarHintColor: widget.searchBarHintColor,
+      searchbarInputBorder: widget.searchbarInputBorder,
+      searchbarInputFocusBorder: widget.searchbarInputFocusBorderp,
+      searchbarBorderRadius: widget.searchbarBorderRadius,
+      searchbarDebounceDuration: widget.searchbarDebounceDuration,
+      maxSearchResults: widget.maxSearchResults ?? 5,
+    );
+
+    // Resolve ControlsConfiguration
+    _controlsConfig = widget.controlsConfiguration?.copyWith(
+      showZoomController: widget.showZoomController,
+      showLocationController: widget.showLocationController,
+      zoomButtonsColor: widget.zoomButtonsColor,
+      zoomButtonsBackgroundColor: widget.zoomButtonsBackgroundColor,
+      locationButtonsColor: widget.locationButtonsColor,
+      locationButtonBackgroundColor: widget.locationButtonBackgroundColor,
+      zoomButtonsSize: widget.zoomButtonsSize,
+      locationButtonSize: widget.locationButtonSize,
+      controlButtonsSpacing: widget.controlButtonsSpacing,
+      controlButtonsPadding: widget.controlButtonsPadding,
+    ) ?? ControlsConfiguration(
+      showZoomController: widget.showZoomController ?? true,
+      showLocationController: widget.showLocationController ?? true,
+      zoomButtonsColor: widget.zoomButtonsColor,
+      zoomButtonsBackgroundColor: widget.zoomButtonsBackgroundColor,
+      locationButtonsColor: widget.locationButtonsColor,
+      locationButtonBackgroundColor: widget.locationButtonBackgroundColor,
+      zoomButtonsSize: widget.zoomButtonsSize,
+      locationButtonSize: widget.locationButtonSize,
+      controlButtonsSpacing: widget.controlButtonsSpacing ?? 16.0,
+      controlButtonsPadding: widget.controlButtonsPadding ?? const EdgeInsets.all(16.0),
+    );
+
+    // Resolve MarkerConfiguration
+    _markerConfig = widget.markerConfiguration?.copyWith(
+      markerIcon: widget.markerIcon,
+      markerIconOffset: widget.markerIconOffset,
+      animateMarker: widget.animateMarker,
+      markerAnimationDuration: widget.markerAnimationDuration,
+    ) ?? MarkerConfiguration(
+      markerIcon: widget.markerIcon,
+      markerIconOffset: widget.markerIconOffset ?? 50.0,
+      animateMarker: widget.animateMarker ?? true,
+      markerAnimationDuration: widget.markerAnimationDuration ?? const Duration(milliseconds: 200),
+    );
+
+    // Resolve SelectButtonConfiguration
+    _selectButtonConfig = widget.selectButtonConfiguration?.copyWith(
+      showSelectLocationButton: widget.showSelectLocationButton,
+      selectLocationButtonText: widget.selectLocationButtonText,
+      selectLocationButtonLeadingIcon: widget.selectLocationButtonLeadingIcon,
+      selectLocationButtonStyle: widget.selectLocationButtonStyle,
+      selectLocationButtonWidth: widget.selectLocationButtonWidth,
+      selectLocationButtonHeight: widget.selectLocationButtonHeight,
+      selectedLocationButtonTextStyle: widget.selectedLocationButtonTextStyle,
+      selectLocationButtonPositionTop: widget.selectLocationButtonPositionTop,
+      selectLocationButtonPositionRight: widget.selectLocationButtonPositionRight,
+      selectLocationButtonPositionLeft: widget.selectLocationButtonPositionLeft,
+      selectLocationButtonPositionBottom: widget.selectLocationButtonPositionBottom,
+    ) ?? SelectButtonConfiguration(
+      showSelectLocationButton: widget.showSelectLocationButton ?? true,
+      selectLocationButtonText: widget.selectLocationButtonText ?? 'Set Current Location',
+      selectLocationButtonLeadingIcon: widget.selectLocationButtonLeadingIcon,
+      selectLocationButtonStyle: widget.selectLocationButtonStyle,
+      selectLocationButtonWidth: widget.selectLocationButtonWidth,
+      selectLocationButtonHeight: widget.selectLocationButtonHeight,
+      selectedLocationButtonTextStyle: widget.selectedLocationButtonTextStyle ?? const TextStyle(fontSize: 20),
+      selectLocationButtonPositionTop: widget.selectLocationButtonPositionTop,
+      selectLocationButtonPositionRight: widget.selectLocationButtonPositionRight ?? 0,
+      selectLocationButtonPositionLeft: widget.selectLocationButtonPositionLeft ?? 0,
+      selectLocationButtonPositionBottom: widget.selectLocationButtonPositionBottom ?? 3,
+    );
+
+    // Resolve AttributionConfiguration
+    _attributionConfig = widget.attributionConfiguration?.copyWith(
+      showContributorBadgeForOSM: widget.showContributorBadgeForOSM,
+      contributorBadgeForOSMColor: widget.contributorBadgeForOSMColor,
+      contributorBadgeForOSMTextColor: widget.contributorBadgeForOSMTextColor,
+      contributorBadgeForOSMText: widget.contributorBadgeForOSMText,
+      contributorBadgeForOSMPositionTop: widget.contributorBadgeForOSMPositionTop,
+      contributorBadgeForOSMPositionLeft: widget.contributorBadgeForOSMPositionLeft,
+      contributorBadgeForOSMPositionRight: widget.contributorBadgeForOSMPositionRight,
+      contributorBadgeForOSMPositionBottom: widget.contributorBadgeForOSMPositionBottom,
+    ) ?? AttributionConfiguration(
+      showContributorBadgeForOSM: widget.showContributorBadgeForOSM ?? false,
+      contributorBadgeForOSMColor: widget.contributorBadgeForOSMColor,
+      contributorBadgeForOSMTextColor: widget.contributorBadgeForOSMTextColor ?? Colors.blue,
+      contributorBadgeForOSMText: widget.contributorBadgeForOSMText ?? 'OpenStreetMap contributors',
+      contributorBadgeForOSMPositionTop: widget.contributorBadgeForOSMPositionTop,
+      contributorBadgeForOSMPositionLeft: widget.contributorBadgeForOSMPositionLeft,
+      contributorBadgeForOSMPositionRight: widget.contributorBadgeForOSMPositionRight ?? 0,
+      contributorBadgeForOSMPositionBottom: widget.contributorBadgeForOSMPositionBottom ?? -6,
+    );
+  }
+
+  /// Initializes controllers and focus nodes
+  void _initializeControllers() {
+    _mapController = MapController();
+    _animationController = AnimationController(
+      duration: _mapConfig.mapAnimationDuration,
+      vsync: this,
+    );
+    _searchController = TextEditingController();
+    _focusNode = FocusNode();
+  }
+
+  /// Initializes services
+  void _initializeServices() {
+    _geocodingService = GeocodingService(
+      nominatimHost: widget.nominatimHost,
+      userAgent: widget.userAgent,
+      language: _mapConfig.mapLanguage,
+      additionalQueryParameters: widget.nominatimAdditionalQueryParameters,
+      countryFilter: widget.countryFilter,
+    );
+
+    _searchDebouncer = Debouncer(
+      delay: _searchConfig.searchbarDebounceDuration ?? const Duration(milliseconds: 500),
+    );
+
+    _onError = widget.onError ?? (e) => debugPrint(e.toString());
+  }
+
+  /// Sets up map event listeners
+  void _setupMapEventListeners() {
+    _mapController.mapEventStream.listen((event) async {
+      if (event is MapEventMoveEnd) {
+        final center = LatLong(
+          event.camera.center.latitude,
+          event.camera.center.longitude,
+        );
+        await _handleLocationChanged(center);
       }
-      if (permission == LocationPermission.denied) {
-        throw Exception('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Prompt user to open app settings
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Permission Required'),
-          content: const Text('Location permissions are permanently denied. Please enable them in app settings.'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                await Geolocator.openAppSettings();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Open Settings'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-          ],
-        ),
-      );
-      throw Exception('Location permissions are permanently denied, we cannot request permissions.');
-    }
-  }
-
-  /// If location services are enabled, check if we have permissions to access the location. If we don't
-  /// have permissions, request them. If we have permissions, return the current position
-  ///
-  /// Returns:
-  ///   A Future<Position> object.
-  Future<Position> _determinePosition() async {
-    try {
-      // Test if location services are enabled.
-      // Position position = await Geolocator.getCurrentPosition();
-      await checkLocationPermission();
-      // return await location.getLocation();
-      return await Geolocator.getCurrentPosition();
-    } catch (e) {
-      rethrow;
-    }
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-  }
-
-  /// Create a animation controller, add a listener to the controller, and
-  /// then forward the controller with the new location
-  ///
-  /// Args:
-  ///   destLocation (LatLng): The LatLng of the destination location.
-  ///   destZoom (double): The zoom level you want to animate to.
-  void _animatedMapMove(LatLng destLocation, double destZoom) {
-    // Create some tweens. These serve to split up the transition from one location to another.
-    // In our case, we want to split the transition be<tween> our current map center and the destination.
-    final latTween = Tween<double>(
-        begin: _mapController.camera.center.latitude,
-        end: destLocation.latitude);
-    final lngTween = Tween<double>(
-        begin: _mapController.camera.center.longitude,
-        end: destLocation.longitude);
-    final zoomTween =
-        Tween<double>(begin: _mapController.camera.zoom, end: destZoom);
-    // Create a animation controller that has a duration and a TickerProvider.
-    if (mounted) {
-      _animationController = AnimationController(
-          vsync: this, duration: widget.mapAnimationDuration);
-    }
-    // The animation determines what path the animation will take. You can try different Curves values, although I found
-    // fastOutSlowIn to be my favorite.
-    final Animation<double> animation = CurvedAnimation(
-        parent: _animationController, curve: Curves.fastOutSlowIn);
-
-    _animationController.addListener(() {
-      _mapController.move(
-          LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
-          zoomTween.evaluate(animation));
     });
+  }
+
+  /// Initializes location based on settings
+  void _initializeLocation() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        if (widget.initPosition != null) {
+          _currentPosition = widget.initPosition!;
+          await _handleLocationChanged(_currentPosition);
+          _setLoadingState(false);
+        } else if (widget.trackMyPosition) {
+          await _trackCurrentPosition();
+        } else {
+          await _handleLocationChanged(_currentPosition);
+          _setLoadingState(false);
+        }
+      } catch (e) {
+        _onError(e is Exception ? e : Exception(e.toString()));
+        _setLoadingState(false);
+      }
+    });
+  }
+
+  /// Tracks current user position
+  Future<void> _trackCurrentPosition() async {
+    try {
+      final permissionService = PermissionService(context);
+      await permissionService.checkAndRequestLocationPermission();
+
+      final position = await LocationService.getCurrentPosition();
+      _currentPosition = position;
+
+      await _handleLocationChanged(_currentPosition);
+      _animateToLocation(_currentPosition.toLatLng(), 18.0);
+    } catch (e) {
+      _onError(e is Exception ? e : Exception(e.toString()));
+    } finally {
+      _setLoadingState(false);
+    }
+  }
+
+  /// Handles location changes and updates address
+  Future<void> _handleLocationChanged(LatLong latLng, {String? address}) async {
+    try {
+      final pickedData = await _geocodingService.reverseGeocode(
+        latLng,
+        zoomLevel: widget.nominatimZoomLevel,
+      );
+
+      if (widget.onChanged != null) {
+        widget.onChanged!(pickedData);
+      }
+
+      _searchController.text = address ?? pickedData.address;
+      if (mounted) setState(() {});
+    } catch (e) {
+      _onError(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  /// Animates map to specified location
+  void _animateToLocation(LatLng destLocation, double destZoom) {
+    final latTween = Tween<double>(
+      begin: _mapController.camera.center.latitude,
+      end: destLocation.latitude,
+    );
+    final lngTween = Tween<double>(
+      begin: _mapController.camera.center.longitude,
+      end: destLocation.longitude,
+    );
+    final zoomTween = Tween<double>(
+      begin: _mapController.camera.zoom,
+      end: destZoom,
+    );
 
     if (mounted) {
+      _animationController.reset();
+
+      final animation = CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.fastOutSlowIn,
+      );
+
+      _animationController.addListener(() {
+        _mapController.move(
+          LatLng(
+            latTween.evaluate(animation),
+            lngTween.evaluate(animation),
+          ),
+          zoomTween.evaluate(animation),
+        );
+      });
+
       _animationController.forward();
     }
   }
 
-  /// The function `onLocationChanged` updates the current position with the given latitude and
-  /// longitude, then retrieves data and calls the `onChanged` callback with the retrieved value.
-  ///
-  /// Args:
-  ///   latitude (double): The latitude parameter represents the current latitude coordinate of the
-  /// location. It is a double value that specifies the north-south position on the Earth's surface.
-  ///   longitude (double): The longitude parameter represents the current longitude coordinate of the
-  /// location.
-  ///  address (String): The address parameter represents the current address of the location.
-  void onLocationChanged({required latLng, String? address}) {
-    pickData(latLng).then(
-      (PickedData pickedData) {
-        if (widget.onChanged != null) widget.onChanged!(pickedData);
-        // These two lines, and the onError callback below are the replacement =
-        // for the entire setNameCurrentPos function.
-        _searchController.text = address ?? pickedData.address;
-        setState(() {});
-      },
-    ).onError<Exception>((error, stackTrace) {
-      onError(error);
-    });
-  }
-
-  /// It takes the pointer of the map and sends a request to the OpenStreetMap API to get the address of
-  /// the pointer
-  ///
-  /// Returns:
-  ///   A Future object that will eventually contain a PickedData object.
-  Future<PickedData> pickData(LatLong center) async {
-    var client = http.Client();
-    // If zoom level is not explicitly set, use zoom level corresponding to current camera zoom, when possible
-    int roundedZoom = widget.nominatimZoomLevel ??
-        ((isLoading || _animationController.isAnimating)
-            ? 18
-            : min(_mapController.camera.zoom.round(), 18));
-    // String url =
-    //     'https://${widget.nominatimHost}/reverse?format=json&lat=${center.latitude}&lon=${center.longitude}&zoom=$roundedZoom&addressdetails=1&accept-language=${widget.mapLanguage}';
-    // var uri = Uri.parse(url);
-    Map<String, dynamic> queryParameters = {
-      'format': 'json',
-      'lat': center.latitude.toString(),
-      'lon': center.longitude.toString(),
-      'zoom': roundedZoom.toString(),
-      'addressdetails': '1',
-      'accept-language': widget.mapLanguage,
-    };
-    final headers = {
-      'user-agent': widget.userAgent,
-    };
-    queryParameters.addAll(widget.nominatimAdditionalQueryParameters ?? {});
-    var uri = Uri.https(widget.nominatimHost, '/reverse', queryParameters);
-    var response = await client.get(uri, headers: headers);
-    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
-    String displayName = "This Location is not accessible";
-    Map<String, dynamic> address;
-
-    if (decodedResponse is Map<String, dynamic>) {
-      if (decodedResponse['display_name'] != null) {
-        displayName = decodedResponse['display_name'];
-        address = decodedResponse['address'];
-      } else {
-        center = const LatLong(0, 0);
-        address = decodedResponse;
-      }
-      return PickedData(center, displayName, address, decodedResponse);
-    } else {
-      return PickedData(const LatLong(0, 0), displayName, {}, decodedResponse);
-    }
-  }
-
-  @override
-  void setState(fn) {
+  /// Sets loading state safely
+  void _setLoadingState(bool loading) {
     if (mounted) {
-      super.setState(fn);
-    }
-  }
-
-  @override
-  void initState() {
-    _mapController = MapController();
-    _animationController =
-        AnimationController(duration: widget.mapAnimationDuration, vsync: this);
-    onError = widget.onError ?? (e) => debugPrint(e.toString());
-
-    /// Checking if the trackMyPosition is true or false. If it is true, it will get the current
-    /// position of the user and set the initLate and initLong to the current position. If it is false,
-    /// it will set the initLate and initLong to the [initPosition].latitude and
-    /// [initPosition].longitude.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.initPosition != null) {
-        initPosition = LatLong(
-            widget.initPosition!.latitude, widget.initPosition!.longitude);
-        onLocationChanged(latLng: initPosition);
-        setState(() {
-          isLoading = false;
-        });
-      }
-    });
-
-    if (widget.trackMyPosition) {
-      _determinePosition().then((currentPosition) {
-        initPosition =
-            LatLong(currentPosition.latitude, currentPosition.longitude);
-
-        onLocationChanged(latLng: initPosition);
-        _animatedMapMove(initPosition.toLatLng(), 18.0);
-        setState(
-          () {
-            isLoading = false;
-          },
-        );
-      }, onError: (e) => onError(e)).whenComplete(
-        () => setState(
-          () {
-            isLoading = false;
-          },
-        ),
-      );
-    } else {
-      onLocationChanged(latLng: initPosition);
       setState(() {
-        isLoading = false;
+        _isLoading = loading;
       });
     }
-
-    /// The above code is listening to the mapEventStream and when the mapEventMoveEnd event is
-    /// triggered, it calls the setNameCurrentPos function.
-    _mapController.mapEventStream.listen((event) async {
-      if (event is MapEventMoveEnd) {
-        LatLong center = LatLong(
-            event.camera.center.latitude, event.camera.center.longitude);
-        onLocationChanged(latLng: center);
-      }
-    });
-
-    super.initState();
   }
 
-  /// The dispose() function is called when the widget is removed from the widget tree and is used to
-  /// clean up resources
-  @override
-  void dispose() {
+  /// Handles search input changes
+  void _handleSearchInput(String value) {
+    if (mounted) setState(() {});
+
+    _searchDebouncer(() async {
+      if (value.trim().isEmpty) {
+        _searchOptions.clear();
+        if (mounted) setState(() {});
+        return;
+      }
+
+      try {
+        final results = await _geocodingService.searchLocations(value);
+        _searchOptions = results;
+        if (mounted) setState(() {});
+      } catch (e) {
+        _onError(e is Exception ? e : Exception(e.toString()));
+      }
+    });
+  }
+
+  /// Handles search result selection
+  void _handleSearchResultTap(OSMdata selectedLocation) {
+    final center = LatLong(selectedLocation.latitude, selectedLocation.longitude);
+    _animateToLocation(center.toLatLng(), 18.0);
+    _handleLocationChanged(
+      center,
+      address: selectedLocation.displayname,
+    );
+    _focusNode.unfocus();
+    _searchOptions.clear();
+    setState(() {});
+  }
+
+  /// Handles location button press
+  Future<void> _handleLocationButtonPress() async {
+    try {
+      final permissionService = PermissionService(context);
+      await permissionService.checkAndRequestLocationPermission();
+
+      final position = await LocationService.getCurrentPosition();
+      _animateToLocation(position.toLatLng(), 18);
+      await _handleLocationChanged(position);
+    } catch (e) {
+      _onError(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  /// Handles select location button press
+  Future<void> _handleSelectLocationPress() async {
+    _setLoadingState(true);
+
+    try {
+      final center = LatLong(
+        _mapController.camera.center.latitude,
+        _mapController.camera.center.longitude,
+      );
+      final pickedData = await _geocodingService.reverseGeocode(center);
+      widget.onPicked(pickedData);
+    } catch (e) {
+      _onError(e is Exception ? e : Exception(e.toString()));
+    } finally {
+      _setLoadingState(false);
+    }
+  }
+
+  /// Disposes controllers and services
+  void _disposeControllers() {
     _mapController.dispose();
     _animationController.dispose();
-    super.dispose();
+    _searchController.dispose();
+    _focusNode.dispose();
+    _searchDebouncer.dispose();
+  }
+
+  /// Checks if text is RTL
+  bool _isRTL(String text) {
+    return intl.Bidi.detectRtlDirectionality(text);
   }
 
   Widget _buildListView() {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _options.length > 5 ? 5 : _options.length,
+      itemCount: _searchOptions.length > _searchConfig.maxSearchResults
+          ? _searchConfig.maxSearchResults
+          : _searchOptions.length,
       itemBuilder: (context, index) {
-        return ListTile(
-          leading: Icon(Icons.location_on, color: widget.searchBarTextColor),
-          title: Text(
-            _options[index].displayname,
-            style: TextStyle(color: widget.searchBarTextColor),
+        return SizedBox(
+          height: _searchConfig.searchResultItemHeight,
+          child: ListTile(
+            leading: Icon(
+              _searchConfig.searchResultIcon,
+              color: _searchConfig.searchResultIconColor ?? _searchConfig.searchBarTextColor,
+            ),
+            title: Text(
+              _searchOptions[index].displayname,
+              style: TextStyle(color: _searchConfig.searchBarTextColor),
+            ),
+            onTap: () {
+              _handleSearchResultTap(_searchOptions[index]);
+            },
           ),
-          onTap: () {
-            LatLong center =
-                LatLong(_options[index].latitude, _options[index].longitude);
-            _animatedMapMove(center.toLatLng(), 18.0);
-            onLocationChanged(
-              latLng: center,
-              address: _options[index].displayname,
-            );
-            _focusNode.unfocus();
-            _options.clear();
-            setState(() {});
-          },
         );
       },
     );
   }
 
   Widget _buildSearchBar() {
-    OutlineInputBorder inputBorder = OutlineInputBorder(
-      borderSide: BorderSide(color: Theme.of(context).primaryColor),
-    );
-    OutlineInputBorder inputFocusBorder = OutlineInputBorder(
-      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 3.0),
-    );
+    if (!_searchConfig.showSearchBar) return const SizedBox.shrink();
+
+    final inputBorder = _searchConfig.searchbarInputBorder ??
+        OutlineInputBorder(
+          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+        );
+    final inputFocusBorder = _searchConfig.searchbarInputFocusBorder ??
+        OutlineInputBorder(
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 3.0),
+        );
 
     return Positioned(
       top: 0,
       left: 0,
       right: 0,
       child: Container(
-        margin: const EdgeInsets.all(15),
+        margin: _searchConfig.searchBarMargin,
+        padding: _searchConfig.searchBarPadding,
         decoration: BoxDecoration(
-          color: widget.searchBarBackgroundColor ??
+          color: _searchConfig.searchBarBackgroundColor ??
               Theme.of(context).colorScheme.surface,
-          borderRadius:
-              widget.searchbarBorderRadius ?? BorderRadius.circular(5),
+          borderRadius: _searchConfig.searchbarBorderRadius ?? BorderRadius.circular(5),
         ),
         child: Column(
           children: [
             TextFormField(
-              textDirection: isRTL(_searchController.text)
+              textDirection: _isRTL(_searchController.text)
                   ? TextDirection.rtl
                   : TextDirection.ltr,
-              style: TextStyle(color: widget.searchBarTextColor),
+              style: TextStyle(color: _searchConfig.searchBarTextColor),
               controller: _searchController,
               focusNode: _focusNode,
               decoration: InputDecoration(
-                hintText: widget.searchBarHintText,
-                hintTextDirection: isRTL(widget.searchBarHintText)
+                hintText: _searchConfig.searchBarHintText,
+                hintTextDirection: _isRTL(_searchConfig.searchBarHintText)
                     ? TextDirection.rtl
                     : TextDirection.ltr,
-                border: widget.searchbarInputBorder ?? inputBorder,
-                focusedBorder:
-                    widget.searchbarInputFocusBorderp ?? inputFocusBorder,
-                hintStyle: TextStyle(color: widget.searchBarHintColor),
+                border: inputBorder,
+                focusedBorder: inputFocusBorder,
+                hintStyle: TextStyle(color: _searchConfig.searchBarHintColor),
                 suffixIcon: IconButton(
                   onPressed: () {
                     _searchController.clear();
-                    _options.clear();
+                    _searchOptions.clear();
                     setState(() {});
                   },
                   icon: Icon(
                     Icons.clear,
-                    color: widget.searchBarTextColor,
+                    color: _searchConfig.searchBarTextColor,
                   ),
                 ),
               ),
-              onChanged: (String value) {
-                if (_debounce?.isActive ?? false) {
-                  _debounce?.cancel();
-                }
-                setState(() {});
-                _debounce = Timer(
-                  widget.searchbarDebounceDuration ??
-                      const Duration(milliseconds: 500),
-                  () async {
-                    var client = http.Client();
-                    try {
-                      String url =
-                          'https://${widget.nominatimHost}/search?q=$value&format=json&polygon_geojson=1&addressdetails=1&accept-language=${widget.mapLanguage}${widget.countryFilter != null ? '&countrycodes=${widget.countryFilter}' : ''}';
-                      var response = await client.get(Uri.parse(url));
-                      var decodedResponse =
-                          jsonDecode(utf8.decode(response.bodyBytes))
-                              as List<dynamic>;
-                      _options = decodedResponse
-                          .map((e) => OSMdata(
-                              displayname: e['display_name'],
-                              latitude: double.parse(e['lat']),
-                              longitude: double.parse(e['lon'])))
-                          .toList();
-                      setState(() {});
-                    } on Exception catch (e) {
-                      onError(e);
-                    } finally {
-                      client.close();
-                    }
-                  },
-                );
-              },
+              onChanged: _handleSearchInput,
             ),
-            StatefulBuilder(
-              builder: ((context, setState) {
-                return _buildListView();
-              }),
-            ),
+            if (_searchOptions.isNotEmpty) _buildListView(),
           ],
         ),
       ),
@@ -758,67 +1128,80 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   Widget _buildControllerButtons() {
     return PositionedDirectional(
-      bottom: 72,
-      end: 16,
-      child: Column(
-        children: [
-          if (widget.showZoomController)
-            FloatingActionButton(
-              heroTag: "btn1",
-              shape: const CircleBorder(),
-              backgroundColor: widget.zoomButtonsBackgroundColor,
-              onPressed: () {
-                _animatedMapMove(_mapController.camera.center,
-                    _mapController.camera.zoom + widget.stepZoom);
-              },
-              child: Icon(
-                Icons.zoom_in,
-                color: widget.zoomButtonsColor,
+      bottom: _controlsConfig.controlButtonsBottom,
+      end: _controlsConfig.controlButtonsEnd,
+      child: Padding(
+        padding: _controlsConfig.controlButtonsPadding,
+        child: Column(
+          children: [
+            if (_controlsConfig.showZoomController) ...[
+              _buildZoomButton(
+                icon: _controlsConfig.zoomInIcon,
+                onPressed: () {
+                  _animateToLocation(
+                    _mapController.camera.center,
+                    _mapController.camera.zoom + _mapConfig.stepZoom,
+                  );
+                },
+                heroTag: "zoom_in",
               ),
-            ),
-          const SizedBox(height: 16),
-          if (widget.showZoomController)
-            FloatingActionButton(
-              heroTag: "btn2",
-              shape: const CircleBorder(),
-              backgroundColor: widget.zoomButtonsBackgroundColor,
-              onPressed: () {
-                _animatedMapMove(_mapController.camera.center,
-                    _mapController.camera.zoom - widget.stepZoom);
-              },
-              child: Icon(
-                Icons.zoom_out,
-                color: widget.zoomButtonsColor,
+              SizedBox(height: _controlsConfig.controlButtonsSpacing),
+              _buildZoomButton(
+                icon: _controlsConfig.zoomOutIcon,
+                onPressed: () {
+                  _animateToLocation(
+                    _mapController.camera.center,
+                    _mapController.camera.zoom - _mapConfig.stepZoom,
+                  );
+                },
+                heroTag: "zoom_out",
               ),
-            ),
-          const SizedBox(height: 22),
-          if (widget.showLocationController)
-            FloatingActionButton(
-              heroTag: "btn3",
-              backgroundColor: widget.locationButtonBackgroundColor,
-              onPressed: () async {
-                // setState(() {
-                //   isLoading = true;
-                // });
-                _determinePosition().then(
-                  (currentPosition) {
-                    LatLong center = LatLong(
-                        currentPosition.latitude, currentPosition.longitude);
-                    _animatedMapMove(center.toLatLng(), 18);
-                    onLocationChanged(latLng: center);
-                    setState(
-                      () {
-                        isLoading = false;
-                      },
-                    );
-                  },
-                  onError: (e) => onError(e),
-                );
-              },
-              child:
-                  Icon(Icons.my_location, color: widget.locationButtonsColor),
-            ),
-        ],
+              SizedBox(height: _controlsConfig.controlButtonsSpacing + 6),
+            ],
+            if (_controlsConfig.showLocationController)
+              _buildLocationButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildZoomButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required String heroTag,
+  }) {
+    return SizedBox(
+      width: _controlsConfig.zoomButtonsSize,
+      height: _controlsConfig.zoomButtonsSize,
+      child: FloatingActionButton(
+        heroTag: heroTag,
+        elevation: _controlsConfig.showButtonShadow ? _controlsConfig.buttonElevation : 0,
+        shape: _controlsConfig.buttonShape ?? const CircleBorder(),
+        backgroundColor: _controlsConfig.zoomButtonsBackgroundColor,
+        onPressed: onPressed,
+        child: Icon(
+          icon,
+          color: _controlsConfig.zoomButtonsColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationButton() {
+    return SizedBox(
+      width: _controlsConfig.locationButtonSize,
+      height: _controlsConfig.locationButtonSize,
+      child: FloatingActionButton(
+        heroTag: "location",
+        elevation: _controlsConfig.showButtonShadow ? _controlsConfig.buttonElevation : 0,
+        shape: _controlsConfig.buttonShape ?? const CircleBorder(),
+        backgroundColor: _controlsConfig.locationButtonBackgroundColor,
+        onPressed: _handleLocationButtonPress,
+        child: Icon(
+          _controlsConfig.locationIcon,
+          color: _controlsConfig.locationButtonsColor,
+        ),
       ),
     );
   }
@@ -827,25 +1210,27 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
     return Positioned.fill(
       child: FlutterMap(
         options: MapOptions(
-          initialCenter:
-              widget.initPosition?.toLatLng() ?? initPosition.toLatLng(),
-          initialZoom: widget.initZoom,
-          maxZoom: widget.maxZoomLevel,
-          minZoom: widget.minZoomLevel,
-          cameraConstraint: (widget.maxBounds != null
-              ? CameraConstraint.contain(bounds: widget.maxBounds!)
+          initialCenter: widget.initPosition?.toLatLng() ?? _currentPosition.toLatLng(),
+          initialZoom: _mapConfig.initZoom,
+          maxZoom: _mapConfig.maxZoomLevel,
+          minZoom: _mapConfig.minZoomLevel,
+          cameraConstraint: (_mapConfig.maxBounds != null
+              ? CameraConstraint.contain(bounds: _mapConfig.maxBounds!)
               : const CameraConstraint.unconstrained()),
-          backgroundColor:
-              widget.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
+          backgroundColor: _mapConfig.mapLoadingBackgroundColor ?? const Color(0xFFE0E0E0),
           keepAlive: true,
+          onTap: widget.onMapTap != null
+              ? (tapPosition, point) => widget.onMapTap!(point)
+              : null,
         ),
         mapController: _mapController,
         children: [
           TileLayer(
-            urlTemplate: widget.urlTemplate,
+            urlTemplate: _mapConfig.urlTemplate,
             subdomains: const ['a', 'b', 'c'],
             userAgentPackageName: widget.userAgent,
-            tileProvider: CancellableNetworkTileProvider(),
+            tileProvider: _mapConfig.customTileProvider ?? CancellableNetworkTileProvider(),
+            additionalOptions: _mapConfig.tileRequestHeaders ?? {},
           ),
           if (widget.showCurrentLocationPointer) _buildCurrentLocation(),
           ...widget.mapLayers,
@@ -865,53 +1250,58 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
   }
 
   Widget _buildMarker() {
-    return Positioned.fill(
-      bottom: widget.markerIconOffset,
-      child: IgnorePointer(
-        child: Center(
-          child: widget.markerIcon ??
-              const Icon(
-                Icons.location_pin,
-                color: Colors.blue,
-                size: 50,
-              ),
+    final markerWidget = _markerConfig.markerIcon ?? Icon(
+      _markerConfig.defaultMarkerIcon,
+      color: _markerConfig.defaultMarkerColor,
+      size: _markerConfig.defaultMarkerSize,
+    );
+
+    Widget marker = markerWidget;
+
+    if (_markerConfig.showMarkerShadow) {
+      marker = Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: _markerConfig.markerShadowColor ?? Colors.black26,
+              blurRadius: _markerConfig.markerShadowBlurRadius,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
+        child: markerWidget,
+      );
+    }
+
+    return Positioned.fill(
+      bottom: _markerConfig.markerIconOffset,
+      child: IgnorePointer(
+        child: Center(child: marker),
       ),
     );
   }
 
   Widget _buildSelectButton() {
+    if (!_selectButtonConfig.showSelectLocationButton) {
+      return const SizedBox.shrink();
+    }
+
     return Positioned(
-      top: widget.selectLocationButtonPositionTop,
-      bottom: widget.selectLocationButtonPositionBottom,
-      left: widget.selectLocationButtonPositionLeft,
-      right: widget.selectLocationButtonPositionRight,
+      top: _selectButtonConfig.selectLocationButtonPositionTop,
+      bottom: _selectButtonConfig.selectLocationButtonPositionBottom,
+      left: _selectButtonConfig.selectLocationButtonPositionLeft,
+      right: _selectButtonConfig.selectLocationButtonPositionRight,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: _selectButtonConfig.selectLocationButtonPadding,
           child: WideButton(
-            widget.selectLocationButtonText,
-            leadingIcon: widget.selectLocationButtonLeadingIcon,
-            onPressed: () async {
-              setState(() {
-                isLoading = true;
-              });
-              LatLong center = LatLong(_mapController.camera.center.latitude,
-                  _mapController.camera.center.longitude);
-              pickData(center).then((value) {
-                widget.onPicked(value);
-              }, onError: (e) => onError(e)).whenComplete(
-                () => setState(
-                  () {
-                    isLoading = false;
-                  },
-                ),
-              );
-            },
-            style: widget.selectLocationButtonStyle,
-            textStyle: widget.selectedLocationButtonTextStyle,
-            width: widget.selectLocationButtonWidth,
-            height: widget.selectLocationButtonHeight,
+            _selectButtonConfig.selectLocationButtonText,
+            leadingIcon: _selectButtonConfig.selectLocationButtonLeadingIcon,
+            onPressed: _handleSelectLocationPress,
+            style: _selectButtonConfig.selectLocationButtonStyle,
+            textStyle: _selectButtonConfig.selectedLocationButtonTextStyle,
+            width: _selectButtonConfig.selectLocationButtonWidth,
+            height: _selectButtonConfig.selectLocationButtonHeight,
           ),
         ),
       ),
@@ -920,30 +1310,37 @@ class _FlutterLocationPickerState extends State<FlutterLocationPicker>
 
   @override
   Widget build(BuildContext context) {
+    // Call onMapReady callback if map is loaded and callback exists
+    if (!_isLoading && widget.onMapReady != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onMapReady!();
+      });
+    }
+
     return Stack(
       children: [
         _buildMap(),
-        if (!isLoading) _buildMarker(),
-        if (isLoading) Center(child: widget.loadingWidget!),
+        if (!_isLoading) _buildMarker(),
+        if (_isLoading) Center(child: widget.loadingWidget!),
         SafeArea(
           child: Stack(
             children: [
               _buildControllerButtons(),
-              if (widget.showSearchBar) _buildSearchBar(),
-              if (widget.showContributorBadgeForOSM) ...[
+              _buildSearchBar(),
+              if (_attributionConfig.showContributorBadgeForOSM) ...[
                 Positioned(
-                  top: widget.contributorBadgeForOSMPositionTop,
-                  bottom: widget.contributorBadgeForOSMPositionBottom,
-                  left: widget.contributorBadgeForOSMPositionLeft,
-                  right: widget.contributorBadgeForOSMPositionRight,
+                  top: _attributionConfig.contributorBadgeForOSMPositionTop,
+                  bottom: _attributionConfig.contributorBadgeForOSMPositionBottom,
+                  left: _attributionConfig.contributorBadgeForOSMPositionLeft,
+                  right: _attributionConfig.contributorBadgeForOSMPositionRight,
                   child: CopyrightOSMWidget(
-                    badgeText: widget.contributorBadgeForOSMText,
-                    badgeTextColor: widget.contributorBadgeForOSMTextColor,
-                    badgeColor: widget.contributorBadgeForOSMColor,
+                    badgeText: _attributionConfig.contributorBadgeForOSMText,
+                    badgeTextColor: _attributionConfig.contributorBadgeForOSMTextColor,
+                    badgeColor: _attributionConfig.contributorBadgeForOSMColor,
                   ),
                 ),
               ],
-              if (widget.showSelectLocationButton) _buildSelectButton(),
+              _buildSelectButton(),
             ],
           ),
         )
