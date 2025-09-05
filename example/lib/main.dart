@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           mapLanguage: 'en',
           onError: (e) => print(e),
           selectLocationButtonLeadingIcon: const Icon(Icons.check),
-          userAgent: 'MyApp/1.0.0 (contact@mycompany.com)',
+          userAgent: 'MyApp/1.0.0 (contact@m_code.com)',
           onPicked: (pickedData) {
             print(pickedData.latLong.latitude);
             print(pickedData.latLong.longitude);
