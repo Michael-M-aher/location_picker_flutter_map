@@ -147,7 +147,7 @@ class SearchConfiguration {
 
   /// Padding inside search bar container
   ///
-  /// **Default**: EdgeInsets.all(8)
+  /// **Default**: EdgeInsets.all(0)
   final EdgeInsets searchBarPadding;
 
   /// Height of each search result item
@@ -173,7 +173,7 @@ class SearchConfiguration {
     this.searchbarInputBorder,
     this.searchbarInputFocusBorder,
     this.searchBarMargin = const EdgeInsets.all(15),
-    this.searchBarPadding = const EdgeInsets.all(8),
+    this.searchBarPadding = const EdgeInsets.all(0),
     this.searchResultItemHeight = 56.0,
     this.searchResultIcon = Icons.location_on,
     this.searchResultIconColor,
@@ -409,7 +409,7 @@ class MarkerConfiguration {
 
   /// Shadow for the marker
   ///
-  /// **Default**: true
+  /// **Default**: false
   final bool showMarkerShadow;
 
   /// Shadow color for the marker
@@ -428,7 +428,7 @@ class MarkerConfiguration {
     this.defaultMarkerColor = Colors.blue,
     this.defaultMarkerSize = 50.0,
     this.defaultMarkerIcon = Icons.location_pin,
-    this.showMarkerShadow = true,
+    this.showMarkerShadow = false,
     this.markerShadowColor,
     this.markerShadowBlurRadius = 4.0,
   });
