@@ -35,7 +35,7 @@ import 'widgets/wide_button.dart';
 /// ## Basic Usage:
 /// ```dart
 /// FlutterLocationPicker(
-///   userAgent: 'com.example.myapp',
+///   userAgent: 'MyApp/1.0.0 (contact@example.com)',
 ///   onPicked: (PickedData pickedData) {
 ///     print('Selected location: ${pickedData.address}');
 ///     print('Coordinates: ${pickedData.latLong}');
@@ -46,7 +46,7 @@ import 'widgets/wide_button.dart';
 /// ## Advanced Usage with Configuration Classes:
 /// ```dart
 /// FlutterLocationPicker.withConfiguration(
-///   userAgent: 'com.example.myapp',
+///   userAgent: 'MyApp/1.0.0 (contact@example.com)',
 ///   onPicked: (pickedData) => handleLocationPicked(pickedData),
 ///   mapConfiguration: MapConfiguration(
 ///     initZoom: 15,
